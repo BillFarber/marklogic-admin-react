@@ -1,0 +1,6 @@
+// This is a placeholder. The UI is managed by npm/yarn, not Gradle.
+task build {
+    doLast {
+        println 'Use npm run build in MarkLogicAdminUI for frontend build.'
+    }
+}

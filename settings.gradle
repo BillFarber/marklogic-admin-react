@@ -1,0 +1,2 @@
+rootProject.name = 'reactmarklogicadmin'
+include 'MarkLogicAdminUI', 'MarkLogicAdminProxy'

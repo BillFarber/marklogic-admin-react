@@ -50,8 +50,8 @@ This is a Gradle multi-project build containing:
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
-cd reactMarklogicAdmin
+git clone https://github.com/BillFarber/marklogic-admin-react.git
+cd marklogic-admin-react
 ```
 
 ### 2. Start MarkLogic Container

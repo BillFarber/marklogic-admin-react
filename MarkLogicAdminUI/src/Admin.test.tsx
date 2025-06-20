@@ -676,7 +676,7 @@ describe('Admin', () => {
 
             const serversLists = screen.getAllByRole('list');
             const serversList = serversLists.find(list =>
-                list.style.background === 'rgb(74, 45, 42)' // Brown background for servers
+                list.style.background === 'rgb(45, 74, 107)' // Blue background for servers
             );
             expect(serversList?.children).toHaveLength(2);
         });

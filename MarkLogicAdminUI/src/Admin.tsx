@@ -8,6 +8,7 @@ function Admin() {
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
+    const [hoveredForest, setHoveredForest] = React.useState<string | null>(null);
     const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
 
     React.useEffect(() => {
@@ -107,7 +108,7 @@ function Admin() {
             {databases && Array.isArray(databases['database-default-list']?.['list-items']?.['list-item']) && (
                 <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
                     <h2>Databases</h2>
-                    <ul style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8 }}>
+                    <ul style={{ background: '#4a2d6b', color: '#fff', padding: 16, borderRadius: 8 }}>
                         {databases['database-default-list']['list-items']['list-item']
                             .filter((db: any) => db.nameref)
                             .map((db: any, idx: number) => {
@@ -118,13 +119,13 @@ function Admin() {
                                         position: 'relative',
                                         padding: '8px',
                                         borderRadius: '4px',
-                                        backgroundColor: hoveredDatabase === db.idref ? '#333' : 'transparent',
+                                        backgroundColor: hoveredDatabase === db.idref ? '#5a3d7b' : 'transparent',
                                         transition: 'background-color 0.2s ease'
                                     }}>
                                         <strong
                                             style={{
                                                 cursor: 'pointer',
-                                                color: hoveredDatabase === db.idref ? '#4CAF50' : '#fff'
+                                                color: hoveredDatabase === db.idref ? '#B39DDB' : '#fff'
                                             }}
                                             onMouseEnter={() => setHoveredDatabase(db.idref)}
                                             onMouseLeave={() => setHoveredDatabase(null)}
@@ -191,7 +192,49 @@ function Admin() {
                         {forests['forest-default-list']['list-items']['list-item']
                             .filter((forest: any) => forest.nameref)
                             .map((forest: any, idx: number) => (
-                                <li key={forest.nameref || idx}>{forest.nameref}</li>
+                                <li key={forest.nameref || idx} data-idref={forest.idref} style={{
+                                    marginBottom: '8px',
+                                    position: 'relative',
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    backgroundColor: hoveredForest === forest.idref ? '#3a5d4a' : 'transparent',
+                                    transition: 'background-color 0.2s ease'
+                                }}>
+                                    <strong
+                                        style={{
+                                            cursor: 'pointer',
+                                            color: hoveredForest === forest.idref ? '#81C784' : '#fff'
+                                        }}
+                                        onMouseEnter={() => setHoveredForest(forest.idref)}
+                                        onMouseLeave={() => setHoveredForest(null)}
+                                    >
+                                        {forest.nameref}
+                                    </strong>
+                                    <div style={{ fontSize: '0.9em', color: '#ccc', marginTop: '4px' }}>
+                                        Type: Forest | ID: {forest.idref || 'N/A'}
+                                    </div>
+
+                                    {/* Hover tooltip for forests */}
+                                    {hoveredForest === forest.idref && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: '0',
+                                            backgroundColor: '#1a2f2a',
+                                            border: '1px solid #4a6a5a',
+                                            borderRadius: '4px',
+                                            padding: '8px',
+                                            zIndex: 1000,
+                                            minWidth: '200px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                                        }}>
+                                            <div><strong>Forest Details:</strong></div>
+                                            <div><strong>Name:</strong> {forest.nameref}</div>
+                                            <div><strong>URI:</strong> {forest.uriref || 'N/A'}</div>
+                                            <div><strong>ID:</strong> {forest.idref || 'N/A'}</div>
+                                        </div>
+                                    )}
+                                </li>
                             ))}
                     </ul>
                 </section>
@@ -201,7 +244,7 @@ function Admin() {
             {servers && Array.isArray(servers['server-default-list']?.['list-items']?.['list-item']) && (
                 <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
                     <h2>Servers</h2>
-                    <ul style={{ background: '#4a2d2a', color: '#fff', padding: 16, borderRadius: 8 }}>
+                    <ul style={{ background: '#2d4a6b', color: '#fff', padding: 16, borderRadius: 8 }}>
                         {servers['server-default-list']['list-items']['list-item']
                             .filter((server: any) => server.nameref)
                             .map((server: any, idx: number) => (
@@ -210,7 +253,7 @@ function Admin() {
                                     position: 'relative',
                                     padding: '8px',
                                     borderRadius: '4px',
-                                    backgroundColor: hoveredServer === server.idref ? '#5a3d3a' : 'transparent',
+                                    backgroundColor: hoveredServer === server.idref ? '#3d5a7b' : 'transparent',
                                     transition: 'background-color 0.2s ease'
                                 }}>
                                     <strong

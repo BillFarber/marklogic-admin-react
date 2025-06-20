@@ -122,4 +122,92 @@ class DatabasesControllerTest {
         assertEquals(502, result.getStatusCode().value());
         assertTrue(result.getBody().contains("Failed to proxy to MarkLogic: Network error"));
     }
+
+    @Test
+    void testGetDatabaseProperties_Success() throws Exception {
+        // Arrange
+        String mockJson = "{\"database-properties\":{\"database-name\":\"Documents\",\"enabled\":true}}";
+
+        when(databaseClient.getClientImplementation()).thenReturn(okHttpClient);
+        when(okHttpClient.newCall(any(Request.class))).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(mockJson);
+
+        // Act
+        ResponseEntity<String> result = databasesController.getDatabaseProperties("Documents", "json");
+
+        // Assert
+        assertEquals(200, result.getStatusCode().value());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(mockJson, result.getBody());
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+    }
+
+    @Test
+    void testGetDatabaseProperties_XmlFormat() throws Exception {
+        // Arrange
+        String mockXml = "<database-properties><database-name>Documents</database-name></database-properties>";
+
+        when(databaseClient.getClientImplementation()).thenReturn(okHttpClient);
+        when(okHttpClient.newCall(any(Request.class))).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(mockXml);
+
+        // Act
+        ResponseEntity<String> result = databasesController.getDatabaseProperties("Documents", "xml");
+
+        // Assert
+        assertEquals(200, result.getStatusCode().value());
+        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
+        assertEquals(mockXml, result.getBody());
+    }
+
+    @Test
+    void testGetDatabaseProperties_InvalidFormat() {
+        // Act
+        ResponseEntity<String> result = databasesController.getDatabaseProperties("Documents", "invalid");
+
+        // Assert
+        assertEquals(400, result.getStatusCode().value());
+        assertTrue(result.getBody().contains("Invalid format parameter. Must be 'json' or 'xml'"));
+    }
+
+    @Test
+    void testGetDatabaseProperties_MarkLogicError() throws Exception {
+        // Arrange
+        when(databaseClient.getClientImplementation()).thenReturn(okHttpClient);
+        when(okHttpClient.newCall(any(Request.class))).thenReturn(call);
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+        when(response.code()).thenReturn(404);
+
+        // Act
+        ResponseEntity<String> result = databasesController.getDatabaseProperties("NonExistent", "json");
+
+        // Assert
+        assertEquals(404, result.getStatusCode().value());
+        assertTrue(result.getBody().contains("MarkLogic returned status: 404"));
+    }
+
+    @Test
+    void testGetDatabaseProperties_Exception() throws Exception {
+        // Arrange
+        when(databaseClient.getClientImplementation()).thenReturn(okHttpClient);
+        when(okHttpClient.newCall(any(Request.class))).thenReturn(call);
+        when(call.execute()).thenThrow(new RuntimeException("Network error"));
+
+        // Act
+        ResponseEntity<String> result = databasesController.getDatabaseProperties("Documents", "json");
+
+        // Assert
+        assertEquals(502, result.getStatusCode().value());
+        assertTrue(result.getBody().contains("Failed to proxy to MarkLogic: Network error"));
+    }
 }

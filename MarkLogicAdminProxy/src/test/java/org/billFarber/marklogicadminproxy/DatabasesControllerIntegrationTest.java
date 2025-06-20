@@ -57,4 +57,44 @@ class DatabasesControllerIntegrationTest {
         // Verify response contains expected data
         assertNotNull(response.getBody());
     }
+
+    @Test
+    void testGetDatabasePropertiesIntegration() {
+        // Act - Test with Documents database (should exist in standard MarkLogic
+        // installation)
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/manage/v2/databases/Documents/properties?format=json",
+                String.class);
+
+        // Assert
+        // This test requires MarkLogic to be running, accessible, and responding
+        // successfully
+        assertEquals(HttpStatus.OK, response.getStatusCode(),
+                "Expected successful response from MarkLogic. Got: " + response.getStatusCode() +
+                        " with body: " + response.getBody());
+
+        // Verify response contains expected database properties data
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("database-name") ||
+                response.getBody().contains("enabled"),
+                "Response should contain database properties data");
+    }
+
+    @Test
+    void testGetDatabasePropertiesWithXmlFormat() {
+        // Act - Test XML format
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/manage/v2/databases/Documents/properties?format=xml",
+                String.class);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode(),
+                "Expected successful response from MarkLogic. Got: " + response.getStatusCode() +
+                        " with body: " + response.getBody());
+
+        // Verify response contains expected XML data
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("<") && response.getBody().contains(">"),
+                "Response should contain XML data");
+    }
 }

@@ -1,5 +1,15 @@
 package org.billFarber.marklogicadminproxy;
 
+/**
+ * Controller for proxying MarkLogic Forest Management API endpoints.
+ * 
+ * API Documentation:
+ * https://docs.marklogic.com/REST/management/forests
+ * 
+ * Supported parameters and their valid values can be found in the official
+ * MarkLogic Management API documentation.
+ */
+
 import com.marklogic.client.DatabaseClient;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;

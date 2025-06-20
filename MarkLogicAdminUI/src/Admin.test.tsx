@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Admin from './Admin';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom';
@@ -568,6 +568,950 @@ describe('Admin', () => {
                 expect(errorElement.textContent).toContain('Database connection failed');
                 expect(errorElement.textContent).toContain('Forest connection failed');
             });
+        });
+
+        it('complete database details integration test', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' },
+                            { nameref: 'Security', idref: 'sec-456' }
+                        ]
+                    }
+                }
+            };
+
+            const mockForestsResponse = {
+                'forest-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents-forest' },
+                            { nameref: 'Security-forest' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDocumentsDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                language: 'en',
+                'security-database': 'Security',
+                'schema-database': 'Schemas',
+                'triggers-database': 'Triggers',
+                forest: ['Documents-forest-1', 'Documents-forest-2'],
+                'data-encryption': 'off',
+                'stemmed-searches': true,
+                'word-searches': false,
+                'retired-forest-count': 1
+            };
+
+            const mockSecurityDetails = {
+                'database-name': 'Security',
+                enabled: false,
+                language: 'en',
+                'security-database': null,
+                forest: ['Security-forest'],
+                'retired-forest-count': 0
+            };
+
+            // Mock all API calls
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockForestsResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDocumentsDetails)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockSecurityDetails)
+                });
+
+            render(<Admin />);
+
+            // Wait for all data to load
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
+            });
+
+            // Check database names and data-idref attributes
+            const documentsItem = screen.getByText('Documents').closest('li');
+            const securityItem = screen.getByText('Security').closest('li');
+            expect(documentsItem).toHaveAttribute('data-idref', 'doc-123');
+            expect(securityItem).toHaveAttribute('data-idref', 'sec-456');
+
+            // Wait for database details to load
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+                expect(screen.getByText(/Status: Disabled/)).toBeInTheDocument();
+            });
+
+            // Check inline details for Documents
+            expect(screen.getByText(/Forests: 2/)).toBeInTheDocument();
+            expect(screen.getByText(/Security DB: Security/)).toBeInTheDocument();
+
+            // Check inline details for Security
+            expect(screen.getByText(/Forests: 1/)).toBeInTheDocument();
+            expect(screen.getByText(/Security DB: N\/A/)).toBeInTheDocument();
+
+            // Test hover tooltip for Documents
+            const documentsName = screen.getAllByText('Documents')[0]; // Get the first occurrence (database name in list)
+            fireEvent.mouseEnter(documentsName);
+
+            await waitFor(() => {
+                expect(screen.getByText('Database ID:')).toBeInTheDocument();
+                expect(screen.getByText('doc-123')).toBeInTheDocument();
+                expect(screen.getByText('Enabled:')).toBeInTheDocument();
+                expect(screen.getByText('Yes')).toBeInTheDocument();
+                expect(screen.getByText('Language:')).toBeInTheDocument();
+                expect(screen.getByText('en')).toBeInTheDocument();
+                expect(screen.getByText('Security Database:')).toBeInTheDocument();
+                expect(screen.getAllByText('Security').length).toBeGreaterThanOrEqual(2); // Database name and security database value
+                expect(screen.getByText('Schema Database:')).toBeInTheDocument();
+                expect(screen.getByText('Schemas')).toBeInTheDocument();
+                expect(screen.getByText('Triggers Database:')).toBeInTheDocument();
+                expect(screen.getByText('Triggers')).toBeInTheDocument();
+                expect(screen.getByText('Forests:')).toBeInTheDocument();
+                expect(screen.getByText('Documents-forest-1, Documents-forest-2')).toBeInTheDocument();
+                expect(screen.getByText('Data Encryption:')).toBeInTheDocument();
+                expect(screen.getByText('off')).toBeInTheDocument();
+                expect(screen.getByText('Stemmed Searches:')).toBeInTheDocument();
+                // Check that both "Yes" (for Enabled status) and "Enabled" (for Stemmed Searches) are present
+                expect(screen.getByText('Yes')).toBeInTheDocument(); // Enabled status
+                expect(screen.getByText('Word Searches:')).toBeInTheDocument();
+                // We should find one instance of the word "Enabled" after "Stemmed Searches:"
+                const stemmedSearchesElement = screen.getByText('Stemmed Searches:').parentElement;
+                expect(stemmedSearchesElement?.textContent).toContain('Enabled');
+                expect(screen.getByText('Retired Forests:')).toBeInTheDocument();
+                expect(screen.getByText('1')).toBeInTheDocument();
+            });
+
+            fireEvent.mouseLeave(documentsName);
+
+            // Test hover tooltip for Security
+            const securityName = screen.getAllByText('Security')[0]; // Get the first occurrence (database name in list)
+            fireEvent.mouseEnter(securityName);
+
+            await waitFor(() => {
+                expect(screen.getByText('Database ID:')).toBeInTheDocument();
+                expect(screen.getByText('sec-456')).toBeInTheDocument();
+                expect(screen.getByText('Enabled:')).toBeInTheDocument();
+                expect(screen.getByText('No')).toBeInTheDocument();
+                expect(screen.getByText('Forests:')).toBeInTheDocument();
+                // Check that Security-forest appears in the tooltip (not just the forest list)
+                const forestsInTooltip = screen.getByText('Forests:').parentElement;
+                expect(forestsInTooltip?.textContent).toContain('Security-forest');
+                // Should not show retired forests for 0
+                expect(screen.queryByText('Retired Forests:')).not.toBeInTheDocument();
+            });
+
+            fireEvent.mouseLeave(securityName);
+
+            // Check forests are displayed in the forests section
+            const forestsSection = screen.getByRole('heading', { name: 'Forests' }).parentElement;
+            expect(forestsSection?.textContent).toContain('Documents-forest');
+            expect(forestsSection?.textContent).toContain('Security-forest');
+
+            // Verify all API calls were made
+            expect(fetch).toHaveBeenCalledTimes(4); // databases + forests + 2 details
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases',
+                expect.any(Object)
+            );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/forests?format=json',
+                expect.any(Object)
+            );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/doc-123/properties?format=json',
+                expect.any(Object)
+            );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/sec-456/properties?format=json',
+                expect.any(Object)
+            );
+        });
+    });
+
+    // Database details functionality tests
+    describe('Database details functionality', () => {
+        it('adds data-idref attribute to database list items with idref', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' },
+                            { nameref: 'Security', idref: 'sec-456' },
+                            { nameref: 'NoIdref' } // No idref
+                        ]
+                    }
+                }
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Check that items with idref have data-idref attribute
+            const documentsItem = screen.getByText('Documents').closest('li');
+            const securityItem = screen.getByText('Security').closest('li');
+            const noIdrefItem = screen.getByText('NoIdref').closest('li');
+
+            expect(documentsItem).toHaveAttribute('data-idref', 'doc-123');
+            expect(securityItem).toHaveAttribute('data-idref', 'sec-456');
+            expect(noIdrefItem).not.toHaveAttribute('data-idref');
+        });
+
+        it('fetches database details for items with idref', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' },
+                            { nameref: 'Security', idref: 'sec-456' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDocumentsDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                language: 'en',
+                'security-database': 'Security',
+                forest: ['Documents-forest-1', 'Documents-forest-2']
+            };
+
+            const mockSecurityDetails = {
+                'database-name': 'Security',
+                enabled: true,
+                language: 'en',
+                'security-database': null,
+                forest: ['Security-forest']
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDocumentsDetails)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockSecurityDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Verify database details API calls are made
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/doc-123/properties?format=json',
+                {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
+
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/sec-456/properties?format=json',
+                {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
+        });
+
+        it('displays database details inline with status, forests count, and security DB', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDatabaseDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                'security-database': 'Security',
+                forest: ['Documents-forest-1', 'Documents-forest-2']
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabaseDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+                expect(screen.getByText(/Forests: 2/)).toBeInTheDocument();
+                expect(screen.getByText(/Security DB: Security/)).toBeInTheDocument();
+            });
+        });
+
+        it('handles database details with disabled status and no security DB', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Test-DB', idref: 'test-123' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDatabaseDetails = {
+                'database-name': 'Test-DB',
+                enabled: false,
+                'security-database': null,
+                forest: []
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabaseDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Disabled/)).toBeInTheDocument();
+                expect(screen.getByText(/Forests: 0/)).toBeInTheDocument();
+                expect(screen.getByText(/Security DB: N\/A/)).toBeInTheDocument();
+            });
+        });
+
+        it('shows loading state for database details while fetching', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockReturnValueOnce(new Promise(() => { })); // Pending details promise
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Loading details...')).toBeInTheDocument();
+            });
+        });
+
+        it('handles database details fetch errors gracefully', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockRejectedValueOnce(new Error('Database details fetch failed'));
+
+            // Mock console.warn to check it's called
+            const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Should not show details but should not crash
+            expect(screen.queryByText(/Status:/)).not.toBeInTheDocument();
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Failed to fetch details for database Documents:',
+                expect.any(Error)
+            );
+
+            consoleSpy.mockRestore();
+        });
+
+        it('shows detailed hover tooltip when hovering over database name', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDatabaseDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                language: 'en',
+                'security-database': 'Security',
+                'schema-database': 'Schemas',
+                'triggers-database': 'Triggers',
+                forest: ['Documents-forest-1', 'Documents-forest-2'],
+                'data-encryption': 'off',
+                'stemmed-searches': true,
+                'word-searches': false,
+                'retired-forest-count': 0
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabaseDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Wait for details to load
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+            });
+
+            const databaseName = screen.getByRole('listitem').querySelector('strong');
+            expect(databaseName).not.toBeNull();
+
+            // Hover over the database name
+            fireEvent.mouseEnter(databaseName!);
+
+            // Check that detailed tooltip appears
+            await waitFor(() => {
+                expect(screen.getByText('Database ID:')).toBeInTheDocument();
+                expect(screen.getByText('doc-123')).toBeInTheDocument();
+                expect(screen.getByText('Name:')).toBeInTheDocument();
+                // Instead of searching for 'Documents' ambiguously, check the tooltip content structure
+                const nameField = screen.getByText('Name:').parentElement;
+                expect(nameField?.textContent).toContain('Documents');
+                expect(screen.getByText('Enabled:')).toBeInTheDocument();
+                expect(screen.getByText('Yes')).toBeInTheDocument();
+                expect(screen.getByText('Language:')).toBeInTheDocument();
+                expect(screen.getByText('en')).toBeInTheDocument();
+                expect(screen.getByText('Security Database:')).toBeInTheDocument();
+                // Instead of searching for 'Security' ambiguously, check in the security database field
+                const securityField = screen.getByText('Security Database:').parentElement;
+                expect(securityField?.textContent).toContain('Security');
+                expect(screen.getByText('Schema Database:')).toBeInTheDocument();
+                expect(screen.getByText('Schemas')).toBeInTheDocument();
+                expect(screen.getByText('Triggers Database:')).toBeInTheDocument();
+                expect(screen.getByText('Triggers')).toBeInTheDocument();
+                expect(screen.getByText('Forests:')).toBeInTheDocument();
+                expect(screen.getByText('Documents-forest-1, Documents-forest-2')).toBeInTheDocument();
+                expect(screen.getByText('Data Encryption:')).toBeInTheDocument();
+                expect(screen.getByText('off')).toBeInTheDocument();
+                expect(screen.getByText('Stemmed Searches:')).toBeInTheDocument();
+                // Check that the stemmed searches field contains "Enabled"
+                const stemmedSearchesField = screen.getByText('Stemmed Searches:').parentElement;
+                expect(stemmedSearchesField?.textContent).toContain('Enabled');
+                expect(screen.getByText('Word Searches:')).toBeInTheDocument();
+                // Check that the word searches field contains "Disabled"
+                const wordSearchesField = screen.getByText('Word Searches:').parentElement;
+                expect(wordSearchesField?.textContent).toContain('Disabled');
+            });
+
+            // Mouse leave should hide tooltip
+            fireEvent.mouseLeave(databaseName!);
+
+            await waitFor(() => {
+                expect(screen.queryByText('Database ID:')).not.toBeInTheDocument();
+            });
+        });
+
+        it('shows retired forests count in tooltip when greater than 0', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDatabaseDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                'retired-forest-count': 3,
+                forest: []
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabaseDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Wait for details to load
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+            });
+
+            const databaseName = screen.getByText('Documents');
+            fireEvent.mouseEnter(databaseName);
+
+            await waitFor(() => {
+                expect(screen.getByText('Retired Forests:')).toBeInTheDocument();
+                expect(screen.getByText('3')).toBeInTheDocument();
+            });
+        });
+
+        it('does not show retired forests count in tooltip when 0', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDatabaseDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                'retired-forest-count': 0,
+                forest: []
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabaseDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Wait for details to load
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+            });
+
+            const databaseName = screen.getByText('Documents');
+            fireEvent.mouseEnter(databaseName);
+
+            await waitFor(() => {
+                expect(screen.getByText('Database ID:')).toBeInTheDocument();
+                expect(screen.getByText('doc-123')).toBeInTheDocument();
+            });
+
+            expect(screen.queryByText('Retired Forests:')).not.toBeInTheDocument();
+        });
+
+        it('handles null and undefined values in database details tooltip', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDatabaseDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                language: null,
+                'security-database': undefined,
+                'schema-database': null,
+                'triggers-database': undefined,
+                forest: null
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabaseDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Wait for details to load
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+            });
+
+            const databaseName = screen.getByText('Documents');
+            fireEvent.mouseEnter(databaseName);
+
+            await waitFor(() => {
+                expect(screen.getByText('Language:')).toBeInTheDocument();
+                expect(screen.getAllByText('N/A').length).toBeGreaterThanOrEqual(4); // Multiple N/A values
+                expect(screen.getByText('Security Database:')).toBeInTheDocument();
+                expect(screen.getByText('Schema Database:')).toBeInTheDocument();
+                expect(screen.getByText('Triggers Database:')).toBeInTheDocument();
+                expect(screen.getByText('Forests:')).toBeInTheDocument();
+                expect(screen.getByText('None')).toBeInTheDocument();
+            });
+        });
+
+        it('does not show tooltip for databases without details loaded', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' }
+                        ]
+                    }
+                }
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockReturnValueOnce(new Promise(() => { })); // Pending details promise
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Loading details...')).toBeInTheDocument();
+            });
+
+            const databaseName = screen.getByText('Documents');
+            fireEvent.mouseEnter(databaseName);
+
+            // Should not show tooltip
+            expect(screen.queryByText('Database ID:')).not.toBeInTheDocument();
+        });
+
+        it('fetches database details in parallel for multiple databases', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' },
+                            { nameref: 'Security', idref: 'sec-456' },
+                            { nameref: 'App-Services', idref: 'app-789' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDetails1 = { 'database-name': 'Documents', enabled: true };
+            const mockDetails2 = { 'database-name': 'Security', enabled: true };
+            const mockDetails3 = { 'database-name': 'App-Services', enabled: false };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDetails1)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDetails2)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDetails3)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Verify all details API calls are made in parallel
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/doc-123/properties?format=json',
+                expect.any(Object)
+            );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/sec-456/properties?format=json',
+                expect.any(Object)
+            );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/app-789/properties?format=json',
+                expect.any(Object)
+            );
+
+            // Wait for all details to load
+            await waitFor(() => {
+                expect(screen.getAllByText(/Status: Enabled/).length).toBe(2);
+                expect(screen.getByText(/Status: Disabled/)).toBeInTheDocument();
+            });
+        });
+
+        it('skips database details fetch for databases without idref', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' },
+                            { nameref: 'NoIdref' } // No idref
+                        ]
+                    }
+                }
+            };
+
+            const mockDetails = { 'database-name': 'Documents', enabled: true };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDetails)
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Should only make one details call (for Documents)
+            expect(fetch).toHaveBeenCalledTimes(3); // Initial databases + forests + one details call
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/databases/doc-123/properties?format=json',
+                expect.any(Object)
+            );
+
+            // NoIdref should not have status display
+            const noIdrefItem = screen.getByText('NoIdref').closest('li');
+            expect(noIdrefItem?.textContent).not.toContain('Status:');
+        });
+    });
+
+    // Raw Database Details section
+    describe('Raw Database Details section', () => {
+        it('displays raw database details JSON when details are loaded', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: 'doc-123' },
+                            { nameref: 'Security', idref: 'sec-456' }
+                        ]
+                    }
+                }
+            };
+
+            const mockDocumentsDetails = {
+                'database-name': 'Documents',
+                enabled: true,
+                language: 'en',
+                'security-database': 'Security',
+                forest: ['Documents-forest-1', 'Documents-forest-2']
+            };
+
+            const mockSecurityDetails = {
+                'database-name': 'Security',
+                enabled: false,
+                'security-database': null,
+                forest: ['Security-forest']
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDocumentsDetails)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockSecurityDetails)
+                });
+
+            render(<Admin />);
+
+            // Wait for database details to load
+            await waitFor(() => {
+                expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
+                expect(screen.getByText(/Status: Disabled/)).toBeInTheDocument();
+            });
+
+            // Check that the raw database details section exists
+            expect(screen.getByText('View Raw Database Details JSON')).toBeInTheDocument();
+
+            // Verify the JSON content contains the expected database details
+            const detailsSection = screen.getByText('View Raw Database Details JSON').parentElement;
+            expect(detailsSection?.textContent).toContain('doc-123');
+            expect(detailsSection?.textContent).toContain('sec-456');
+            expect(detailsSection?.textContent).toContain('Documents');
+            expect(detailsSection?.textContent).toContain('Security');
+        });
+
+        it('does not display raw database details section when no details are loaded', async () => {
+            const mockDatabasesResponse = {
+                'database-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'NoIdrefDatabase' } // No idref, so no details will be fetched
+                        ]
+                    }
+                }
+            };
+
+            (fetch as any)
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockDatabasesResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'forest-default-list': { 'list-items': { 'list-item': [] } } })
+                });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+            });
+
+            // Should not show the raw database details section
+            expect(screen.queryByText('View Raw Database Details JSON')).not.toBeInTheDocument();
         });
     });
 });

@@ -1,6 +1,21 @@
 import React from 'react';
 import { MD5 } from 'crypto-js';
 
+/**
+ * NOTE: This file is currently unused but intentionally kept in the project.
+ * 
+ * Digest authentication in JavaScript/React is complex and non-trivial to implement correctly.
+ * This file contains a working implementation for HTTP Digest authentication that may be needed
+ * in the future if:
+ * - Direct authentication to MarkLogic is required (bypassing the Spring Boot proxy)
+ * - Alternative authentication methods need to be supported
+ * - Client-side authentication becomes necessary for certain use cases
+ * 
+ * The implementation handles the complex MD5 hashing, nonce generation, and response
+ * calculation required for proper Digest auth. Rather than lose this working code,
+ * it's preserved here as a reference implementation.
+ */
+
 // Utility to parse WWW-Authenticate header for Digest
 function parseDigestAuthHeader(header: string) {
     const prefix = 'Digest ';

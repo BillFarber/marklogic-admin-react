@@ -1,4 +1,4 @@
-package com.example.marklogicadminproxy;
+package org.billFarber.marklogicadminproxy;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

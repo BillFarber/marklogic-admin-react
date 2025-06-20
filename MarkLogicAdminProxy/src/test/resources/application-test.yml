@@ -3,6 +3,7 @@ server:
 
 marklogic:
   host: localhost
+  port: 8000
   username: admin
   password: admin
   schema: http

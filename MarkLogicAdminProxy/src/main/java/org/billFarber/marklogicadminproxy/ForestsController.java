@@ -1,4 +1,4 @@
-package com.example.marklogicadminproxy;
+package org.billFarber.marklogicadminproxy;
 
 import com.marklogic.client.DatabaseClient;
 import okhttp3.HttpUrl;

@@ -1,4 +1,4 @@
-package com.example.marklogicadminproxy;
+package org.billFarber.marklogicadminproxy;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -11,6 +11,9 @@ public class MarkLogicConfig {
     @Value("${marklogic.host}")
     private String host;
 
+    @Value("${marklogic.port}")
+    private int port;
+
     @Value("${marklogic.username}")
     private String username;
 
@@ -19,10 +22,9 @@ public class MarkLogicConfig {
 
     @Bean
     public DatabaseClient databaseClient() {
-        // Assumes default port 8000 and Digest authentication
         return DatabaseClientFactory.newClient(
                 host,
-                8000,
+                port,
                 new DatabaseClientFactory.DigestAuthContext(username, password));
     }
 }

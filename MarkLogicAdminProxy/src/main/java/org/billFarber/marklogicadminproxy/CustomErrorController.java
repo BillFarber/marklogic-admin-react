@@ -1,4 +1,4 @@
-package com.example.marklogicadminproxy;
+package org.billFarber.marklogicadminproxy;
 
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.MediaType;

@@ -4,19 +4,22 @@ function Admin() {
     const [databases, setDatabases] = React.useState<any>(null);
     const [databaseDetails, setDatabaseDetails] = React.useState<Record<string, any>>({});
     const [forests, setForests] = React.useState<any>(null);
+    const [servers, setServers] = React.useState<any>(null);
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
+    const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         document.title = 'MarkLogic Admin';
 
-        // Make requests to both databases and forests endpoints
+        // Make requests to databases, forests, and servers endpoints
         const databasesUrl = 'http://localhost:8080/manage/v2/databases';
         const forestsUrl = 'http://localhost:8080/manage/v2/forests?format=json';
+        const serversUrl = 'http://localhost:8080/manage/v2/servers?format=json';
 
-        // Fetch databases first, then fetch details for each database
-        fetch(databasesUrl, {
+        // Create promises for all three endpoints
+        const databasesPromise = fetch(databasesUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
         })
@@ -60,8 +63,7 @@ function Admin() {
             })
             .catch(e => setError(e.message));
 
-        // Fetch forests
-        fetch(forestsUrl, {
+        const forestsPromise = fetch(forestsUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
         })
@@ -72,8 +74,24 @@ function Admin() {
                 return res.json();
             })
             .then(data => setForests(data))
-            .catch(e => setError(prev => prev ? `${prev}; Forests: ${e.message}` : `Forests: ${e.message}`))
-            .finally(() => setLoading(false));
+            .catch(e => setError(prev => prev ? `${prev}; Forests: ${e.message}` : `Forests: ${e.message}`));
+
+        const serversPromise = fetch(serversUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => setServers(data))
+            .catch(e => setError(prev => prev ? `${prev}; Servers: ${e.message}` : `Servers: ${e.message}`));
+
+        // Wait for all requests to complete, then stop loading
+        Promise.allSettled([databasesPromise, forestsPromise, serversPromise])
+            .then(() => setLoading(false));
     }, []);
 
     return (
@@ -81,6 +99,8 @@ function Admin() {
             <h1>MarkLogic Admin (Proxy)</h1>
             <p>Welcome to the admin page using Spring Boot proxy.</p>
             {loading && <div>Loading database details...</div>}
+            {loading && <div>Loading forests...</div>}
+            {loading && <div>Loading servers...</div>}
             {error && <div style={{ color: 'red' }}>Error: {error}</div>}
 
             {/* Databases section */}
@@ -177,24 +197,95 @@ function Admin() {
                 </section>
             )}
 
+            {/* Servers section */}
+            {servers && Array.isArray(servers['server-default-list']?.['list-items']?.['list-item']) && (
+                <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                    <h2>Servers</h2>
+                    <ul style={{ background: '#4a2d2a', color: '#fff', padding: 16, borderRadius: 8 }}>
+                        {servers['server-default-list']['list-items']['list-item']
+                            .filter((server: any) => server.nameref)
+                            .map((server: any, idx: number) => (
+                                <li key={server.nameref || idx} data-idref={server.idref} style={{
+                                    marginBottom: '8px',
+                                    position: 'relative',
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    backgroundColor: hoveredServer === server.idref ? '#5a3d3a' : 'transparent',
+                                    transition: 'background-color 0.2s ease'
+                                }}>
+                                    <strong
+                                        style={{
+                                            cursor: 'pointer',
+                                            color: hoveredServer === server.idref ? '#FF7043' : '#fff'
+                                        }}
+                                        onMouseEnter={() => setHoveredServer(server.idref)}
+                                        onMouseLeave={() => setHoveredServer(null)}
+                                    >
+                                        {server.nameref}
+                                    </strong>
+                                    <div style={{ fontSize: '0.9em', color: '#ccc', marginTop: '4px' }}>
+                                        Type: {server.kindref || 'N/A'} |
+                                        ID: {server.idref} |
+                                        Group: {server.groupnameref || 'Default'}
+                                    </div>
+
+                                    {/* Detailed hover tooltip */}
+                                    {hoveredServer === server.idref && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: '0',
+                                            right: '0',
+                                            background: '#5a3d3a',
+                                            border: '1px solid #777',
+                                            borderRadius: '8px',
+                                            padding: '12px',
+                                            marginTop: '4px',
+                                            zIndex: 1000,
+                                            fontSize: '0.85em',
+                                            boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                                        }}>
+                                            <div><strong>Server ID:</strong> {server.idref}</div>
+                                            <div><strong>Name:</strong> {server.nameref}</div>
+                                            <div><strong>Type:</strong> {server.kindref || 'N/A'}</div>
+                                            <div><strong>Group:</strong> {server.groupnameref || 'Default'}</div>
+                                            {server['content-db'] && <div><strong>Content Database:</strong> {server['content-db']}</div>}
+                                            {server['modules-db'] && <div><strong>Modules Database:</strong> {server['modules-db']}</div>}
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                    </ul>
+                </section>
+            )}
+
             {/* Raw JSON data sections */}
-            {databases ? (
+            {databases && (
                 <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
                     <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Databases JSON</summary>
                     <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
                         {JSON.stringify(databases, null, 2)}
                     </pre>
                 </details>
-            ) : !error && <div>Loading databases...</div>}
+            )}
 
-            {forests ? (
+            {forests && (
                 <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
                     <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Forests JSON</summary>
                     <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
                         {JSON.stringify(forests, null, 2)}
                     </pre>
                 </details>
-            ) : !error && <div>Loading forests...</div>}
+            )}
+
+            {servers && (
+                <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Servers JSON</summary>
+                    <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
+                        {JSON.stringify(servers, null, 2)}
+                    </pre>
+                </details>
+            )}
 
             {/* Raw Database Details section */}
             {Object.keys(databaseDetails).length > 0 && (

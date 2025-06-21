@@ -49,13 +49,20 @@ describe('DatabaseItem', () => {
         expect(defaultProps.setHoveredDatabase).toHaveBeenCalledWith('db123');
     });
 
-    it('calls setHoveredDatabase with null on mouse leave', () => {
+    it('calls setHoveredDatabase with null on mouse leave', async () => {
+        vi.useFakeTimers();
+
         render(<DatabaseItem {...defaultProps} />);
 
         const databaseElement = screen.getByText('Documents');
         fireEvent.mouseLeave(databaseElement);
 
+        // Fast-forward time to trigger timeout
+        vi.advanceTimersByTime(300);
+
         expect(defaultProps.setHoveredDatabase).toHaveBeenCalledWith(null);
+
+        vi.useRealTimers();
     }); it('applies hover styles when database is hovered', () => {
         const propsWithHover = {
             ...defaultProps,

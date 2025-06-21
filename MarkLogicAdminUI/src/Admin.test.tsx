@@ -6,6 +6,21 @@ import '@testing-library/jest-dom';
 // Mock fetch globally
 globalThis.fetch = vi.fn();
 
+// Timer management
+beforeEach(() => {
+    vi.clearAllMocks();
+});
+
+afterEach(() => {
+    vi.clearAllTimers();
+    // Only restore timers if fake timers are active
+    try {
+        vi.useRealTimers();
+    } catch {
+        // Ignore if real timers are already active
+    }
+});
+
 // Helper function to create mock responses for all five endpoints (databases, forests, servers, users, roles)
 const mockAllEndpoints = (databasesResponse: any, forestsResponse: any, serversResponse: any, usersResponse: any = null, rolesResponse: any = null) => {
     const defaultUsersResponse = usersResponse || {
@@ -1070,9 +1085,9 @@ describe('Admin', () => {
                 expect(errorElement.textContent).toContain('Users connection failed');
                 expect(errorElement.textContent).toContain('Roles connection failed');
             });
-        });
+        }); it('complete database details integration test', { timeout: 15000 }, async () => {
+            // Start with real timers to let async operations complete normally
 
-        it('complete database details integration test', async () => {
             const mockDatabasesResponse = {
                 'database-default-list': {
                     'list-items': {
@@ -1187,9 +1202,17 @@ describe('Admin', () => {
                 expect(stemmedSearchesElement?.textContent).toContain('Enabled');
                 expect(screen.getByText('Retired Forests:')).toBeInTheDocument();
                 expect(screen.getByText('1')).toBeInTheDocument();
-            });
+            }); fireEvent.mouseLeave(documentsName);
 
-            fireEvent.mouseLeave(documentsName);
+            // Use fake timers only for the hover timeout control
+            vi.useFakeTimers();
+            vi.advanceTimersByTime(350);
+            vi.useRealTimers();
+
+            // Wait for the Documents tooltip to disappear
+            await waitFor(() => {
+                expect(screen.queryByText('doc-123')).not.toBeInTheDocument();
+            });
 
             // Test hover tooltip for Security
             const securityName = screen.getAllByText('Security')[0]; // Get the first occurrence (database name in list)

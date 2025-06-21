@@ -9,6 +9,44 @@ interface ForestItemProps {
 
 export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredForest }: ForestItemProps) {
     const isHovered = hoveredForest === forest.idref;
+    const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+
+    const handleMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setHoveredForest(forest.idref);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredForest(null);
+        }, 300);
+        setHoverTimeout(timeout);
+    };
+
+    const handleTooltipMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    const handleTooltipMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredForest(null);
+        }, 100);
+        setHoverTimeout(timeout);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
 
     return (
         <li
@@ -28,8 +66,8 @@ export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredFor
                     cursor: 'pointer',
                     color: isHovered ? '#81C784' : '#fff'
                 }}
-                onMouseEnter={() => setHoveredForest(forest.idref)}
-                onMouseLeave={() => setHoveredForest(null)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
                 {forest.nameref}
             </strong>
@@ -39,18 +77,25 @@ export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredFor
 
             {/* Hover tooltip for forests */}
             {isHovered && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '0',
-                    backgroundColor: '#1a2f2a',
-                    border: '1px solid #4a6a5a',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    zIndex: 1000,
-                    minWidth: '300px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        backgroundColor: '#1a2f2a',
+                        border: '1px solid #4a6a5a',
+                        borderRadius: '4px',
+                        padding: '8px',
+                        zIndex: 1000,
+                        minWidth: '300px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        cursor: 'default',
+                        userSelect: 'text'
+                    }}
+                    onMouseEnter={handleTooltipMouseEnter}
+                    onMouseLeave={handleTooltipMouseLeave}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div><strong>Forest Details:</strong></div>
                     <div><strong>Name:</strong> {forest.nameref}</div>
                     <div><strong>ID:</strong> {forest.idref || 'N/A'}</div>

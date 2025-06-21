@@ -9,6 +9,44 @@ interface RoleItemProps {
 
 export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: RoleItemProps) {
     const isHovered = hoveredRole === role.nameref;
+    const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+
+    const handleMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setHoveredRole(role.nameref);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredRole(null);
+        }, 300);
+        setHoverTimeout(timeout);
+    };
+
+    const handleTooltipMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    const handleTooltipMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredRole(null);
+        }, 100);
+        setHoverTimeout(timeout);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
 
     return (
         <li
@@ -28,8 +66,8 @@ export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: Rol
                     cursor: 'pointer',
                     color: isHovered ? '#DEB887' : '#fff'
                 }}
-                onMouseEnter={() => setHoveredRole(role.nameref)}
-                onMouseLeave={() => setHoveredRole(null)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
                 {role.nameref}
             </strong>
@@ -40,18 +78,25 @@ export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: Rol
 
             {/* Hover tooltip for roles */}
             {isHovered && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '0',
-                    backgroundColor: '#654321',
-                    border: '1px solid #8B4513',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    zIndex: 1000,
-                    minWidth: '300px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        backgroundColor: '#654321',
+                        border: '1px solid #8B4513',
+                        borderRadius: '4px',
+                        padding: '8px',
+                        zIndex: 1000,
+                        minWidth: '300px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        cursor: 'default',
+                        userSelect: 'text'
+                    }}
+                    onMouseEnter={handleTooltipMouseEnter}
+                    onMouseLeave={handleTooltipMouseLeave}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div><strong>Role Details:</strong></div>
                     <div><strong>Name:</strong> {role.nameref}</div>
                     <div><strong>ID:</strong> {role.idref || 'N/A'}</div>

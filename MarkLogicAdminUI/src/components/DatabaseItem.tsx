@@ -10,6 +10,44 @@ interface DatabaseItemProps {
 export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabaseItemProps) {
     const details = databaseDetails[database.idref];
     const isHovered = hoveredDatabase === database.idref;
+    const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+
+    const handleMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setHoveredDatabase(database.idref);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredDatabase(null);
+        }, 300); // 300ms delay before hiding
+        setHoverTimeout(timeout);
+    };
+
+    const handleTooltipMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    const handleTooltipMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredDatabase(null);
+        }, 100); // Shorter delay when leaving tooltip
+        setHoverTimeout(timeout);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
 
     return (
         <li
@@ -29,8 +67,8 @@ export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHo
                     cursor: 'pointer',
                     color: isHovered ? '#B39DDB' : '#fff'
                 }}
-                onMouseEnter={() => setHoveredDatabase(database.idref)}
-                onMouseLeave={() => setHoveredDatabase(null)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
                 {database.nameref}
             </strong>
@@ -49,20 +87,27 @@ export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHo
 
             {/* Detailed hover tooltip */}
             {isHovered && details && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '0',
-                    right: '0',
-                    background: '#444',
-                    border: '1px solid #666',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginTop: '4px',
-                    zIndex: 1000,
-                    fontSize: '0.85em',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        right: '0',
+                        background: '#444',
+                        border: '1px solid #666',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginTop: '4px',
+                        zIndex: 1000,
+                        fontSize: '0.85em',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                        cursor: 'default',
+                        userSelect: 'text'
+                    }}
+                    onMouseEnter={handleTooltipMouseEnter}
+                    onMouseLeave={handleTooltipMouseLeave}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div><strong>Database ID:</strong> {database.idref}</div>
                     <div><strong>Name:</strong> {details['database-name'] || database.nameref}</div>
                     <div><strong>Enabled:</strong> {details.enabled ? 'Yes' : 'No'}</div>

@@ -43,13 +43,20 @@ describe('UserItem', () => {
         expect(defaultProps.setHoveredUser).toHaveBeenCalledWith('test-user');
     });
 
-    it('calls setHoveredUser with null on mouse leave', () => {
+    it('calls setHoveredUser with null on mouse leave', async () => {
+        vi.useFakeTimers();
+
         render(<UserItem {...defaultProps} />);
 
         const userElement = screen.getByText('test-user');
         fireEvent.mouseLeave(userElement);
 
+        // Fast-forward time to trigger timeout
+        vi.advanceTimersByTime(300);
+
         expect(defaultProps.setHoveredUser).toHaveBeenCalledWith(null);
+
+        vi.useRealTimers();
     }); it('applies hover styles when user is hovered', () => {
         const propsWithHover = {
             ...defaultProps,

@@ -9,6 +9,44 @@ interface UserItemProps {
 
 export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: UserItemProps) {
     const isHovered = hoveredUser === user.nameref;
+    const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+
+    const handleMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setHoveredUser(user.nameref);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredUser(null);
+        }, 300); // 300ms delay before hiding
+        setHoverTimeout(timeout);
+    };
+
+    const handleTooltipMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    const handleTooltipMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredUser(null);
+        }, 100); // Shorter delay when leaving tooltip
+        setHoverTimeout(timeout);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
 
     return (
         <li
@@ -28,8 +66,8 @@ export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: Use
                     cursor: 'pointer',
                     color: isHovered ? '#FFB74D' : '#fff'
                 }}
-                onMouseEnter={() => setHoveredUser(user.nameref)}
-                onMouseLeave={() => setHoveredUser(null)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
                 {user.nameref}
             </strong>
@@ -40,18 +78,24 @@ export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: Use
 
             {/* Hover tooltip for users */}
             {isHovered && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '0',
-                    backgroundColor: '#b04500',
-                    border: '1px solid #d45a00',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    zIndex: 1000,
-                    minWidth: '300px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        backgroundColor: '#b04500',
+                        border: '1px solid #d45a00',
+                        borderRadius: '4px',
+                        padding: '8px',
+                        zIndex: 1000,
+                        minWidth: '300px',
+                        cursor: 'default',
+                        userSelect: 'text'
+                    }}
+                    onMouseEnter={handleTooltipMouseEnter}
+                    onMouseLeave={handleTooltipMouseLeave}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div><strong>User Details:</strong></div>
                     <div><strong>Name:</strong> {user.nameref}</div>
                     <div><strong>ID:</strong> {user.idref || 'N/A'}</div>

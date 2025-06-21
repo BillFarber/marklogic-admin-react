@@ -9,6 +9,44 @@ interface ServerItemProps {
 
 export function ServerItem({ server, serverDetails, hoveredServer, setHoveredServer }: ServerItemProps) {
     const isHovered = hoveredServer === server.idref;
+    const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+
+    const handleMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setHoveredServer(server.idref);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredServer(null);
+        }, 300);
+        setHoverTimeout(timeout);
+    };
+
+    const handleTooltipMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    const handleTooltipMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredServer(null);
+        }, 100);
+        setHoverTimeout(timeout);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
 
     return (
         <li
@@ -28,8 +66,8 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
                     cursor: 'pointer',
                     color: isHovered ? '#FF7043' : '#fff'
                 }}
-                onMouseEnter={() => setHoveredServer(server.idref)}
-                onMouseLeave={() => setHoveredServer(null)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
                 {server.nameref}
             </strong>
@@ -41,20 +79,27 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
 
             {/* Detailed hover tooltip */}
             {isHovered && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '0',
-                    right: '0',
-                    background: '#5a3d3a',
-                    border: '1px solid #777',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginTop: '4px',
-                    zIndex: 1000,
-                    fontSize: '0.85em',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        right: '0',
+                        background: '#5a3d3a',
+                        border: '1px solid #777',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginTop: '4px',
+                        zIndex: 1000,
+                        fontSize: '0.85em',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                        cursor: 'default',
+                        userSelect: 'text'
+                    }}
+                    onMouseEnter={handleTooltipMouseEnter}
+                    onMouseLeave={handleTooltipMouseLeave}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div><strong>Server ID:</strong> {server.idref}</div>
                     <div><strong>Name:</strong> {server.nameref}</div>
                     <div><strong>Type:</strong> {server.kindref || 'N/A'}</div>

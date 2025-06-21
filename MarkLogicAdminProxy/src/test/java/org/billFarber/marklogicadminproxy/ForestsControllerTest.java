@@ -206,4 +206,173 @@ class ForestsControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
         assertTrue(result.getBody().contains("Invalid fullrefs parameter"));
     }
+
+    @Test
+    void testGetForestPropertiesSuccess() throws IOException {
+        // Arrange
+        String expectedResponse = "{\"forest-properties\":{\"forest-name\":\"Documents\",\"enabled\":true,\"rebalancer-enable\":true}}";
+
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("Content-Type", "application/json")).thenReturn("application/json");
+        when(responseBody.string()).thenReturn(expectedResponse);
+
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("Documents", "json");
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(expectedResponse, result.getBody());
+        assertEquals("application/json", result.getHeaders().getFirst("Content-Type"));
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+        verify(response).isSuccessful();
+    }
+
+    @Test
+    void testGetForestPropertiesWithXmlFormat() throws IOException {
+        // Arrange
+        String expectedResponse = "<forest-properties><forest-name>Documents</forest-name><enabled>true</enabled></forest-properties>";
+
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("Content-Type", "application/json")).thenReturn("application/xml");
+        when(responseBody.string()).thenReturn(expectedResponse);
+
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("Documents", "xml");
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(expectedResponse, result.getBody());
+        assertEquals("application/xml", result.getHeaders().getFirst("Content-Type"));
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+        verify(response).isSuccessful();
+    }
+
+    @Test
+    void testGetForestPropertiesWithEmptyFormat() {
+        // Act - Test with empty string format (should be invalid)
+        ResponseEntity<String> result = forestsController.getForestProperties("Security", "");
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertTrue(result.getBody().contains("Invalid format parameter"));
+    }
+
+    @Test
+    void testGetForestPropertiesWithNullFormat() throws IOException {
+        // Arrange
+        String expectedResponse = "{\"forest-properties\":{\"forest-name\":\"Security\",\"enabled\":true}}";
+
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+        when(response.header("Content-Type", "application/json")).thenReturn("application/json");
+        when(responseBody.string()).thenReturn(expectedResponse);
+
+        // Act - Test null format (should default to json)
+        ResponseEntity<String> result = forestsController.getForestProperties("Security", null);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(expectedResponse, result.getBody());
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+    }
+
+    @Test
+    void testGetForestPropertiesInvalidFormat() {
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("Documents", "invalid");
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertTrue(result.getBody().contains("Invalid format parameter. Must be 'json' or 'xml'"));
+    }
+
+    @Test
+    void testGetForestPropertiesMarkLogicError() throws IOException {
+        // Arrange
+        String errorResponse = "{\"errorResponse\":{\"message\":\"Forest not found\"}}";
+
+        when(call.execute()).thenReturn(response);
+        when(response.isSuccessful()).thenReturn(false);
+        when(response.code()).thenReturn(404);
+        when(response.body()).thenReturn(responseBody);
+        when(responseBody.string()).thenReturn(errorResponse);
+
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("NonExistent", "json");
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+        assertEquals(errorResponse, result.getBody());
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+    }
+
+    @Test
+    void testGetForestPropertiesIOException() throws IOException {
+        // Arrange
+        when(call.execute()).thenThrow(new IOException("Connection failed"));
+
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("Documents", "json");
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertTrue(result.getBody().contains("Error communicating with MarkLogic"));
+        assertTrue(result.getBody().contains("Connection failed"));
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+    }
+
+    @Test
+    void testGetForestPropertiesNullResponseBody() throws IOException {
+        // Arrange
+        when(call.execute()).thenReturn(response);
+        when(response.body()).thenReturn(null);
+
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("Documents", "json");
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertEquals("No response from MarkLogic server", result.getBody());
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+    }
+
+    @Test
+    void testGetForestPropertiesUnexpectedException() throws IOException {
+        // Arrange
+        when(call.execute()).thenThrow(new RuntimeException("Unexpected error"));
+
+        // Act
+        ResponseEntity<String> result = forestsController.getForestProperties("Documents", "json");
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertTrue(result.getBody().contains("Unexpected error"));
+        assertTrue(result.getBody().contains("Unexpected error"));
+
+        verify(databaseClient).getClientImplementation();
+        verify(okHttpClient).newCall(any(Request.class));
+        verify(call).execute();
+    }
 }

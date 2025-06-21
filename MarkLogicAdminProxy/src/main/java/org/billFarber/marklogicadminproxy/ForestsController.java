@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -139,6 +140,77 @@ public class ForestsController {
                     .body("Error communicating with MarkLogic: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected error in forests endpoint", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/forests/{idOrName}/properties")
+    public ResponseEntity<String> getForestProperties(
+            @PathVariable String idOrName,
+            @RequestParam(value = "format", required = false, defaultValue = "json") String format) {
+
+        logger.info("Received request for forest properties - forest: {}, format: {}", idOrName, format);
+
+        // Handle null format and set default
+        if (format == null) {
+            format = "json";
+        }
+
+        // Validate format parameter
+        if (!format.equals("json") && !format.equals("xml")) {
+            return ResponseEntity.badRequest()
+                    .body("{\"error\":\"Invalid format parameter. Must be 'json' or 'xml'\"}");
+        }
+
+        try {
+            // Get the underlying OkHttpClient from the MarkLogic DatabaseClient
+            OkHttpClient okHttpClient = (OkHttpClient) databaseClient.getClientImplementation();
+
+            // Build the URL for the MarkLogic management API
+            HttpUrl.Builder urlBuilder = HttpUrl
+                    .parse(marklogicSchema + "://" + marklogicHost + ":8002/manage/v2/forests/" + idOrName
+                            + "/properties")
+                    .newBuilder();
+            urlBuilder.addQueryParameter("format", format);
+
+            HttpUrl url = urlBuilder.build();
+            logger.debug("Making request to MarkLogic: {}", url);
+
+            // Create and execute the request
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .build();
+
+            try (Response response = okHttpClient.newCall(request).execute()) {
+                if (response.body() == null) {
+                    logger.error("Received null response body from MarkLogic for forest: {}", idOrName);
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("No response from MarkLogic server");
+                }
+
+                String responseBody = response.body().string();
+                logger.debug("MarkLogic response status: {}, body length: {} for forest: {}",
+                        response.code(), responseBody.length(), idOrName);
+
+                if (response.isSuccessful()) {
+                    return ResponseEntity.ok()
+                            .header("Content-Type", response.header("Content-Type", "application/json"))
+                            .body(responseBody);
+                } else {
+                    logger.error("MarkLogic returned error for forest {}: {} - {}", idOrName, response.code(),
+                            responseBody);
+                    return ResponseEntity.status(response.code()).body(responseBody);
+                }
+            }
+
+        } catch (IOException e) {
+            logger.error("Error communicating with MarkLogic for forest: {}", idOrName, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error communicating with MarkLogic: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error in forest properties endpoint for forest: {}", idOrName, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unexpected error: " + e.getMessage());
         }

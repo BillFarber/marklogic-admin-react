@@ -54,8 +54,6 @@ Thumbs.db
 .gradle/
 gradle-wrapper.jar
 gradle-wrapper.properties
-gradlew
-gradlew.bat
 
 # Spring Boot
 *.jar

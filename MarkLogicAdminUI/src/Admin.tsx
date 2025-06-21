@@ -9,24 +9,28 @@ function Admin() {
     const [serverDetails, setServerDetails] = React.useState<Record<string, any>>({});
     const [users, setUsers] = React.useState<any>(null);
     const [userDetails, setUserDetails] = React.useState<Record<string, any>>({});
+    const [roles, setRoles] = React.useState<any>(null);
+    const [roleDetails, setRoleDetails] = React.useState<Record<string, any>>({});
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
     const [hoveredForest, setHoveredForest] = React.useState<string | null>(null);
     const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
     const [hoveredUser, setHoveredUser] = React.useState<string | null>(null);
+    const [hoveredRole, setHoveredRole] = React.useState<string | null>(null);
     const [activeTab, setActiveTab] = React.useState<string>('infrastructure');
 
     React.useEffect(() => {
         document.title = 'MarkLogic Admin';
 
-        // Make requests to databases, forests, servers, and users endpoints
+        // Make requests to databases, forests, servers, users, and roles endpoints
         const databasesUrl = 'http://localhost:8080/manage/v2/databases';
         const forestsUrl = 'http://localhost:8080/manage/v2/forests?format=json';
         const serversUrl = 'http://localhost:8080/manage/v2/servers?format=json';
         const usersUrl = 'http://localhost:8080/manage/v2/users?format=json';
+        const rolesUrl = 'http://localhost:8080/manage/v2/roles?format=json';
 
-        // Create promises for all four endpoints
+        // Create promises for all five endpoints
         const databasesPromise = fetch(databasesUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
@@ -203,8 +207,52 @@ function Admin() {
             })
             .catch(e => setError(prev => prev ? `${prev}; Users: ${e.message}` : `Users: ${e.message}`));
 
+        const rolesPromise = fetch(rolesUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(async (data) => {
+                setRoles(data);
+
+                // Fetch details for each role using nameref
+                if (data && Array.isArray(data['role-default-list']?.['list-items']?.['list-item'])) {
+                    const roleList = data['role-default-list']['list-items']['list-item'];
+                    const details: Record<string, any> = {};
+
+                    // Fetch details for each role in parallel
+                    const detailPromises = roleList
+                        .filter((role: any) => role.nameref)
+                        .map(async (role: any) => {
+                            try {
+                                const detailUrl = `http://localhost:8080/manage/v2/roles/${role.nameref}/properties?format=json`;
+                                const response = await fetch(detailUrl, {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'application/json' }
+                                });
+
+                                if (response.ok) {
+                                    const detailData = await response.json();
+                                    details[role.nameref] = detailData;
+                                }
+                            } catch (err) {
+                                console.warn(`Failed to fetch details for role ${role.nameref}:`, err);
+                            }
+                        });
+
+                    await Promise.allSettled(detailPromises);
+                    setRoleDetails(details);
+                }
+            })
+            .catch(e => setError(prev => prev ? `${prev}; Roles: ${e.message}` : `Roles: ${e.message}`));
+
         // Wait for all requests to complete, then stop loading
-        Promise.allSettled([databasesPromise, forestsPromise, serversPromise, usersPromise])
+        Promise.allSettled([databasesPromise, forestsPromise, serversPromise, usersPromise, rolesPromise])
             .then(() => setLoading(false));
     }, []);
 
@@ -220,6 +268,7 @@ function Admin() {
                     <div>Loading forests...</div>
                     <div>Loading servers...</div>
                     <div>Loading users...</div>
+                    <div>Loading roles...</div>
                 </div>
             )}
             {error && <div style={{ color: 'red', marginBottom: '1rem' }}>Error: {error}</div>}
@@ -261,7 +310,7 @@ function Admin() {
                             transition: 'all 0.2s ease'
                         }}
                     >
-                        Users
+                        Security (Users & Roles)
                     </button>
                 </div>
 
@@ -647,6 +696,95 @@ function Admin() {
                                 </section>
                             )}
 
+                            {/* Roles section */}
+                            {roles && Array.isArray(roles['role-default-list']?.['list-items']?.['list-item']) && (
+                                <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                                    <h2>Roles</h2>
+                                    <ul style={{ background: '#8B4513', color: '#fff', padding: 16, borderRadius: 8 }}>
+                                        {roles['role-default-list']['list-items']['list-item']
+                                            .filter((role: any) => role.nameref)
+                                            .map((role: any, idx: number) => (
+                                                <li key={role.nameref || idx} data-idref={role.idref} style={{
+                                                    marginBottom: '8px',
+                                                    position: 'relative',
+                                                    padding: '8px',
+                                                    borderRadius: '4px',
+                                                    backgroundColor: hoveredRole === role.nameref ? '#A0522D' : 'transparent',
+                                                    transition: 'background-color 0.2s ease'
+                                                }}>
+                                                    <strong
+                                                        style={{
+                                                            cursor: 'pointer',
+                                                            color: hoveredRole === role.nameref ? '#DEB887' : '#fff'
+                                                        }}
+                                                        onMouseEnter={() => setHoveredRole(role.nameref)}
+                                                        onMouseLeave={() => setHoveredRole(null)}
+                                                    >
+                                                        {role.nameref}
+                                                    </strong>
+                                                    <div style={{ fontSize: '0.9em', color: '#ccc', marginTop: '4px' }}>
+                                                        Type: Role | ID: {role.idref || 'N/A'}
+                                                        {role.description && ` | ${role.description}`}
+                                                    </div>
+
+                                                    {/* Hover tooltip for roles */}
+                                                    {hoveredRole === role.nameref && (
+                                                        <div style={{
+                                                            position: 'absolute',
+                                                            top: '100%',
+                                                            left: '0',
+                                                            backgroundColor: '#654321',
+                                                            border: '1px solid #8B4513',
+                                                            borderRadius: '4px',
+                                                            padding: '8px',
+                                                            zIndex: 1000,
+                                                            minWidth: '300px',
+                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                                                        }}>
+                                                            <div><strong>Role Details:</strong></div>
+                                                            <div><strong>Name:</strong> {role.nameref}</div>
+                                                            <div><strong>ID:</strong> {role.idref || 'N/A'}</div>
+                                                            <div><strong>URI:</strong> {role.uriref || 'N/A'}</div>
+                                                            {role.description && <div><strong>Description:</strong> {role.description}</div>}
+
+                                                            {roleDetails[role.nameref] && (() => {
+                                                                const details = roleDetails[role.nameref];
+                                                                return (
+                                                                    <>
+                                                                        <hr style={{ margin: '8px 0', borderColor: '#8B4513' }} />
+                                                                        <div><strong>Role Properties:</strong></div>
+                                                                        <div><strong>Role Name:</strong> {details['role-name']}</div>
+                                                                        {details.description && <div><strong>Description:</strong> {details.description}</div>}
+                                                                        {details.compartment && <div><strong>Compartment:</strong> {details.compartment}</div>}
+                                                                        {details.roles && Array.isArray(details.roles?.role) && (
+                                                                            <div><strong>Assigned Roles:</strong> {details.roles.role.join(', ')}</div>
+                                                                        )}
+                                                                        {details.roles && !Array.isArray(details.roles?.role) && details.roles?.role && (
+                                                                            <div><strong>Assigned Role:</strong> {details.roles.role}</div>
+                                                                        )}
+                                                                        {details['external-names'] && (
+                                                                            <div><strong>External Names:</strong> {JSON.stringify(details['external-names'])}</div>
+                                                                        )}
+                                                                        {details.permissions && (
+                                                                            <div><strong>Permissions:</strong> {JSON.stringify(details.permissions)}</div>
+                                                                        )}
+                                                                        {details.privilege && Array.isArray(details.privilege) && (
+                                                                            <div><strong>Privileges:</strong> {details.privilege.length} privilege(s)</div>
+                                                                        )}
+                                                                        {details.collections && (
+                                                                            <div><strong>Collections:</strong> {JSON.stringify(details.collections)}</div>
+                                                                        )}
+                                                                    </>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            ))}
+                                    </ul>
+                                </section>
+                            )}
+
                             {/* Raw JSON data sections for Users */}
                             {users && (
                                 <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
@@ -663,6 +801,26 @@ function Admin() {
                                     <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw User Details JSON</summary>
                                     <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
                                         {JSON.stringify(userDetails, null, 2)}
+                                    </pre>
+                                </details>
+                            )}
+
+                            {/* Raw JSON data sections for Roles */}
+                            {roles && (
+                                <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                                    <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Roles JSON</summary>
+                                    <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
+                                        {JSON.stringify(roles, null, 2)}
+                                    </pre>
+                                </details>
+                            )}
+
+                            {/* Raw Role Details section */}
+                            {Object.keys(roleDetails).length > 0 && (
+                                <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                                    <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Role Details JSON</summary>
+                                    <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
+                                        {JSON.stringify(roleDetails, null, 2)}
                                     </pre>
                                 </details>
                             )}

@@ -6,10 +6,18 @@ import '@testing-library/jest-dom';
 // Mock fetch globally
 globalThis.fetch = vi.fn();
 
-// Helper function to create mock responses for all four endpoints
-const mockAllEndpoints = (databasesResponse: any, forestsResponse: any, serversResponse: any, usersResponse: any = null) => {
+// Helper function to create mock responses for all five endpoints (databases, forests, servers, users, roles)
+const mockAllEndpoints = (databasesResponse: any, forestsResponse: any, serversResponse: any, usersResponse: any = null, rolesResponse: any = null) => {
     const defaultUsersResponse = usersResponse || {
         'user-default-list': {
+            'list-items': {
+                'list-item': []
+            }
+        }
+    };
+
+    const defaultRolesResponse = rolesResponse || {
+        'role-default-list': {
             'list-items': {
                 'list-item': []
             }
@@ -32,10 +40,14 @@ const mockAllEndpoints = (databasesResponse: any, forestsResponse: any, serversR
         .mockResolvedValueOnce({
             ok: true,
             json: () => Promise.resolve(defaultUsersResponse)
+        })
+        .mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve(defaultRolesResponse)
         });
 };
 
-// Helper function to create mock responses including database, forest, server, and user details
+// Helper function to create mock responses including database, forest, server, user, and role details
 const mockAllEndpointsWithDetails = (
     databasesResponse: any,
     forestsResponse: any,
@@ -44,7 +56,9 @@ const mockAllEndpointsWithDetails = (
     forestDetailsResponses: Record<string, any> = {},
     serverDetailsResponses: Record<string, any> = {},
     userDetailsResponses: Record<string, any> = {},
-    usersResponse: any = null
+    roleDetailsResponses: Record<string, any> = {},
+    usersResponse: any = null,
+    rolesResponse: any = null
 ) => {
     const defaultUsersResponse = usersResponse || {
         'user-default-list': {
@@ -54,9 +68,17 @@ const mockAllEndpointsWithDetails = (
         }
     };
 
+    const defaultRolesResponse = rolesResponse || {
+        'role-default-list': {
+            'list-items': {
+                'list-item': []
+            }
+        }
+    };
+
     const fetchMock = fetch as any;
 
-    // Mock the initial 4 endpoints
+    // Mock the initial 5 endpoints
     fetchMock
         .mockResolvedValueOnce({
             ok: true,
@@ -73,6 +95,10 @@ const mockAllEndpointsWithDetails = (
         .mockResolvedValueOnce({
             ok: true,
             json: () => Promise.resolve(defaultUsersResponse)
+        })
+        .mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve(defaultRolesResponse)
         });
 
     // Mock database detail endpoints for each database with idref
@@ -143,11 +169,34 @@ const mockAllEndpointsWithDetails = (
             });
         });
     }
+
+    // Mock role detail endpoints for each role with nameref
+    if (defaultRolesResponse && defaultRolesResponse['role-default-list']?.['list-items']?.['list-item']) {
+        const roleList = defaultRolesResponse['role-default-list']['list-items']['list-item'];
+        roleList.filter((role: any) => role.nameref).forEach((role: any) => {
+            const detailResponse = roleDetailsResponses[role.nameref] || {
+                'role-name': role.nameref,
+                'description': 'Sample role',
+                'privilege': [],
+                'permission': [],
+                'collection': []
+            };
+            fetchMock.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(detailResponse)
+            });
+        });
+    }
 };
 
-// Helper function to create mock error responses for all four endpoints
+// Helper function to create mock error responses for all five endpoints
 const mockAllEndpointsWithError = (status: number, statusText: string) => {
     (fetch as any)
+        .mockResolvedValueOnce({
+            ok: false,
+            status,
+            statusText
+        })
         .mockResolvedValueOnce({
             ok: false,
             status,
@@ -462,7 +511,7 @@ describe('Admin', () => {
         });
 
         it('displays error message when forests API call fails with HTTP error', async () => {
-            // Mock databases success, forests failure, servers success, users success
+            // Mock databases success, forests failure, servers success, users success, roles success
             (fetch as any)
                 .mockResolvedValueOnce({
                     ok: true,
@@ -480,6 +529,10 @@ describe('Admin', () => {
                 .mockResolvedValueOnce({
                     ok: true,
                     json: () => Promise.resolve({ 'user-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'role-default-list': { 'list-items': { 'list-item': [] } } })
                 });
 
             render(<Admin />);
@@ -494,7 +547,7 @@ describe('Admin', () => {
         });
 
         it('displays error message when forests API call fails with network error', async () => {
-            // Mock databases success, forests network failure, servers success, users success
+            // Mock databases success, forests network failure, servers success, users success, roles success
             (fetch as any)
                 .mockResolvedValueOnce({
                     ok: true,
@@ -508,6 +561,10 @@ describe('Admin', () => {
                 .mockResolvedValueOnce({
                     ok: true,
                     json: () => Promise.resolve({ 'user-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'role-default-list': { 'list-items': { 'list-item': [] } } })
                 });
 
             render(<Admin />);
@@ -831,6 +888,10 @@ describe('Admin', () => {
                 .mockResolvedValueOnce({
                     ok: true,
                     json: () => Promise.resolve({ 'user-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'role-default-list': { 'list-items': { 'list-item': [] } } })
                 });
 
             render(<Admin />);
@@ -839,7 +900,7 @@ describe('Admin', () => {
         });
 
         it('includes servers error in combined error message on API failure', async () => {
-            // Mock database and forest success, servers failure, users success
+            // Mock database and forest success, servers failure, users success, roles success
             (fetch as any)
                 .mockResolvedValueOnce({
                     ok: true,
@@ -853,6 +914,10 @@ describe('Admin', () => {
                 .mockResolvedValueOnce({
                     ok: true,
                     json: () => Promise.resolve({ 'user-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'role-default-list': { 'list-items': { 'list-item': [] } } })
                 });
 
             render(<Admin />);
@@ -925,7 +990,7 @@ describe('Admin', () => {
                 }
             };
 
-            // Mock databases success, forests failure, servers success, users success
+            // Mock databases success, forests failure, servers success, users success, roles success
             (fetch as any)
                 .mockResolvedValueOnce({
                     ok: true,
@@ -939,6 +1004,10 @@ describe('Admin', () => {
                 .mockResolvedValueOnce({
                     ok: true,
                     json: () => Promise.resolve({ 'user-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'role-default-list': { 'list-items': { 'list-item': [] } } })
                 });
 
             render(<Admin />);
@@ -958,8 +1027,8 @@ describe('Admin', () => {
 
             render(<Admin />);
 
-            // Should make calls to all four endpoints
-            expect(fetch).toHaveBeenCalledTimes(4);
+            // Should make calls to all five endpoints
+            expect(fetch).toHaveBeenCalledTimes(5);
             expect(fetch).toHaveBeenCalledWith(
                 'http://localhost:8080/manage/v2/databases',
                 { method: 'GET', headers: { 'Accept': 'application/json' } }
@@ -976,15 +1045,20 @@ describe('Admin', () => {
                 'http://localhost:8080/manage/v2/users?format=json',
                 { method: 'GET', headers: { 'Accept': 'application/json' } }
             );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/roles?format=json',
+                { method: 'GET', headers: { 'Accept': 'application/json' } }
+            );
         });
 
         it('accumulates error messages from both endpoints', async () => {
-            // Mock all four endpoints to fail
+            // Mock all five endpoints to fail
             (fetch as any)
                 .mockRejectedValueOnce(new Error('Database connection failed'))
                 .mockRejectedValueOnce(new Error('Forest connection failed'))
                 .mockRejectedValueOnce(new Error('Server connection failed'))
-                .mockRejectedValueOnce(new Error('Users connection failed'));
+                .mockRejectedValueOnce(new Error('Users connection failed'))
+                .mockRejectedValueOnce(new Error('Roles connection failed'));
 
             render(<Admin />);
 
@@ -994,6 +1068,7 @@ describe('Admin', () => {
                 expect(errorElement.textContent).toContain('Forest connection failed');
                 expect(errorElement.textContent).toContain('Server connection failed');
                 expect(errorElement.textContent).toContain('Users connection failed');
+                expect(errorElement.textContent).toContain('Roles connection failed');
             });
         });
 
@@ -1141,7 +1216,7 @@ describe('Admin', () => {
             expect(forestsSection?.textContent).toContain('Security-forest');
 
             // Verify all API calls were made
-            expect(fetch).toHaveBeenCalledTimes(6); // databases + forests + servers + users + 2 database details
+            expect(fetch).toHaveBeenCalledTimes(7); // databases + forests + servers + users + roles + 2 database details
             expect(fetch).toHaveBeenCalledWith(
                 'http://localhost:8080/manage/v2/databases',
                 expect.any(Object)
@@ -1748,7 +1823,7 @@ describe('Admin', () => {
             });
 
             // Should only make one details call (for Documents)
-            expect(fetch).toHaveBeenCalledTimes(5); // Initial databases + forests + servers + users + one database details call
+            expect(fetch).toHaveBeenCalledTimes(6); // Initial databases + forests + servers + users + roles + one database details call
             expect(fetch).toHaveBeenCalledWith(
                 'http://localhost:8080/manage/v2/databases/doc-123/properties?format=json',
                 expect.any(Object)
@@ -1993,6 +2068,14 @@ describe('Admin', () => {
                 .mockResolvedValueOnce({
                     ok: true,
                     json: () => Promise.resolve({ 'server-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'user-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'role-default-list': { 'list-items': { 'list-item': [] } } })
                 })
                 .mockRejectedValueOnce(new Error('Forest details fetch failed'));
 

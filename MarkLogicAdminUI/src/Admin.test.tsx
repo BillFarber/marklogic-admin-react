@@ -23,8 +23,8 @@ const mockAllEndpoints = (databasesResponse: any, forestsResponse: any, serversR
         });
 };
 
-// Helper function to create mock responses including database details
-const mockAllEndpointsWithDetails = (databasesResponse: any, forestsResponse: any, serversResponse: any, databaseDetailsResponses: Record<string, any> = {}) => {
+// Helper function to create mock responses including database and forest details
+const mockAllEndpointsWithDetails = (databasesResponse: any, forestsResponse: any, serversResponse: any, databaseDetailsResponses: Record<string, any> = {}, forestDetailsResponses: Record<string, any> = {}) => {
     const fetchMock = fetch as any;
 
     // Mock the initial 3 endpoints
@@ -50,6 +50,25 @@ const mockAllEndpointsWithDetails = (databasesResponse: any, forestsResponse: an
                 'database-name': db.nameref,
                 'enabled': true,
                 'forest': []
+            };
+            fetchMock.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(detailResponse)
+            });
+        });
+    }
+
+    // Mock forest detail endpoints for each forest with idref
+    if (forestsResponse && forestsResponse['forest-default-list']?.['list-items']?.['list-item']) {
+        const forestList = forestsResponse['forest-default-list']['list-items']['list-item'];
+        forestList.filter((forest: any) => forest.idref).forEach((forest: any) => {
+            const detailResponse = forestDetailsResponses[forest.idref] || {
+                'forest-name': forest.nameref,
+                'enabled': true,
+                'host': 'localhost',
+                'data-directory': '/var/opt/MarkLogic/Forests/' + forest.nameref,
+                'updates-allowed': 'all',
+                'availability': 'online'
             };
             fetchMock.mockResolvedValueOnce({
                 ok: true,
@@ -1725,6 +1744,7 @@ describe('Admin', () => {
             const mockSecurityDetails = {
                 'database-name': 'Security',
                 enabled: false,
+                language: 'en',
                 'security-database': null,
                 forest: ['Security-forest']
             };
@@ -1783,6 +1803,177 @@ describe('Admin', () => {
 
             // Should not show the raw database details section
             expect(screen.queryByText('View Raw Database Details JSON')).not.toBeInTheDocument();
+        });
+    });
+
+    // Forest details tests  
+    describe('Forest details functionality', () => {
+        it('fetches details for forests with idref when forests load', async () => {
+            const mockForestsResponse = {
+                'forest-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: '123' },
+                            { nameref: 'Security', idref: '456' }
+                        ]
+                    }
+                }
+            };
+
+            const forestDetailsResponses = {
+                '123': {
+                    'forest-name': 'Documents',
+                    'enabled': true,
+                    'host': 'localhost',
+                    'data-directory': '/var/opt/MarkLogic/Forests/Documents',
+                    'updates-allowed': 'all',
+                    'availability': 'online'
+                },
+                '456': {
+                    'forest-name': 'Security',
+                    'enabled': true,
+                    'host': 'localhost',
+                    'data-directory': '/var/opt/MarkLogic/Forests/Security',
+                    'updates-allowed': 'read-only',
+                    'availability': 'online'
+                }
+            };
+
+            mockAllEndpointsWithDetails(
+                { 'database-default-list': { 'list-items': { 'list-item': [] } } },
+                mockForestsResponse,
+                { 'server-default-list': { 'list-items': { 'list-item': [] } } },
+                {},
+                forestDetailsResponses
+            );
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
+            });
+
+            // Check that fetch was called for forest details
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/forests/123/properties?format=json',
+                {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8080/manage/v2/forests/456/properties?format=json',
+                {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
+        });
+
+        it('displays enhanced forest details in hover tooltip', async () => {
+            const mockForestsResponse = {
+                'forest-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: '123' }
+                        ]
+                    }
+                }
+            };
+
+            const forestDetailsResponses = {
+                '123': {
+                    'forest-name': 'Documents',
+                    'enabled': true,
+                    'host': 'test-host',
+                    'data-directory': '/data/Documents',
+                    'updates-allowed': 'all',
+                    'availability': 'online',
+                    'rebalancer-enable': true,
+                    'database': 'Documents-DB'
+                }
+            };
+
+            mockAllEndpointsWithDetails(
+                { 'database-default-list': { 'list-items': { 'list-item': [] } } },
+                mockForestsResponse,
+                { 'server-default-list': { 'list-items': { 'list-item': [] } } },
+                {},
+                forestDetailsResponses
+            );
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
+            });
+
+            // Hover over the forest name to trigger the tooltip
+            const forestElement = screen.getByText('Documents');
+            fireEvent.mouseEnter(forestElement);
+
+            // Check that detailed forest information is displayed in tooltip
+            await waitFor(() => {
+                expect(screen.getByText('Host:')).toBeInTheDocument();
+            });
+            expect(screen.getByText('test-host')).toBeInTheDocument();
+            expect(screen.getByText('Data Directory:')).toBeInTheDocument();
+            expect(screen.getByText('/data/Documents')).toBeInTheDocument();
+            expect(screen.getByText('Updates Allowed:')).toBeInTheDocument();
+            expect(screen.getByText('all')).toBeInTheDocument();
+            expect(screen.getByText('Availability:')).toBeInTheDocument();
+            expect(screen.getByText('online')).toBeInTheDocument();
+            expect(screen.getByText('Database:')).toBeInTheDocument();
+            expect(screen.getByText('Documents-DB')).toBeInTheDocument();
+        });
+
+        it('handles forest details fetch failures gracefully', async () => {
+            const mockForestsResponse = {
+                'forest-default-list': {
+                    'list-items': {
+                        'list-item': [
+                            { nameref: 'Documents', idref: '123' }
+                        ]
+                    }
+                }
+            };
+
+            // Mock initial endpoints but forest details failure
+            const fetchMock = fetch as any;
+            fetchMock
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'database-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve(mockForestsResponse)
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () => Promise.resolve({ 'server-default-list': { 'list-items': { 'list-item': [] } } })
+                })
+                .mockRejectedValueOnce(new Error('Forest details fetch failed'));
+
+            // Mock console.warn to avoid noise in test output
+            const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
+            render(<Admin />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
+            });
+
+            // Forest should still be displayed even if details fetch failed
+            expect(screen.getByText('Documents')).toBeInTheDocument();
+
+            // Console warning should be logged
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                'Failed to fetch details for forest Documents:',
+                expect.any(Error)
+            );
+
+            consoleWarnSpy.mockRestore();
         });
     });
 });

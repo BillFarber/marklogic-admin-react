@@ -4,6 +4,7 @@ function Admin() {
     const [databases, setDatabases] = React.useState<any>(null);
     const [databaseDetails, setDatabaseDetails] = React.useState<Record<string, any>>({});
     const [forests, setForests] = React.useState<any>(null);
+    const [forestDetails, setForestDetails] = React.useState<Record<string, any>>({});
     const [servers, setServers] = React.useState<any>(null);
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
@@ -74,7 +75,38 @@ function Admin() {
                 }
                 return res.json();
             })
-            .then(data => setForests(data))
+            .then(async (data) => {
+                setForests(data);
+
+                // Fetch details for each forest using idref
+                if (data && Array.isArray(data['forest-default-list']?.['list-items']?.['list-item'])) {
+                    const forestList = data['forest-default-list']['list-items']['list-item'];
+                    const details: Record<string, any> = {};
+
+                    // Fetch details for each forest in parallel
+                    const detailPromises = forestList
+                        .filter((forest: any) => forest.idref)
+                        .map(async (forest: any) => {
+                            try {
+                                const detailUrl = `http://localhost:8080/manage/v2/forests/${forest.idref}/properties?format=json`;
+                                const response = await fetch(detailUrl, {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'application/json' }
+                                });
+
+                                if (response.ok) {
+                                    const detailData = await response.json();
+                                    details[forest.idref] = detailData;
+                                }
+                            } catch (err) {
+                                console.warn(`Failed to fetch details for forest ${forest.nameref}:`, err);
+                            }
+                        });
+
+                    await Promise.allSettled(detailPromises);
+                    setForestDetails(details);
+                }
+            })
             .catch(e => setError(prev => prev ? `${prev}; Forests: ${e.message}` : `Forests: ${e.message}`));
 
         const serversPromise = fetch(serversUrl, {
@@ -225,13 +257,40 @@ function Admin() {
                                             borderRadius: '4px',
                                             padding: '8px',
                                             zIndex: 1000,
-                                            minWidth: '200px',
+                                            minWidth: '300px',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
                                         }}>
                                             <div><strong>Forest Details:</strong></div>
                                             <div><strong>Name:</strong> {forest.nameref}</div>
-                                            <div><strong>URI:</strong> {forest.uriref || 'N/A'}</div>
                                             <div><strong>ID:</strong> {forest.idref || 'N/A'}</div>
+                                            <div><strong>URI:</strong> {forest.uriref || 'N/A'}</div>
+
+                                            {forestDetails[forest.idref] && (() => {
+                                                const details = forestDetails[forest.idref];
+                                                const properties = details['forest-properties'] || details;
+                                                return (
+                                                    <>
+                                                        <hr style={{ margin: '8px 0', borderColor: '#4a6a5a' }} />
+                                                        <div><strong>Host:</strong> {properties.host || 'N/A'}</div>
+                                                        <div><strong>Enabled:</strong> {properties.enabled ? 'Yes' : 'No'}</div>
+                                                        <div><strong>Data Directory:</strong> {properties['data-directory'] || 'N/A'}</div>
+                                                        {properties['large-data-directory'] && (
+                                                            <div><strong>Large Data Directory:</strong> {properties['large-data-directory']}</div>
+                                                        )}
+                                                        {properties['fast-data-directory'] && (
+                                                            <div><strong>Fast Data Directory:</strong> {properties['fast-data-directory']}</div>
+                                                        )}
+                                                        <div><strong>Updates Allowed:</strong> {properties['updates-allowed'] || 'N/A'}</div>
+                                                        <div><strong>Availability:</strong> {properties.availability || 'N/A'}</div>
+                                                        {properties['rebalancer-enable'] !== undefined && (
+                                                            <div><strong>Rebalancer:</strong> {properties['rebalancer-enable'] ? 'Enabled' : 'Disabled'}</div>
+                                                        )}
+                                                        {properties.database && (
+                                                            <div><strong>Database:</strong> {properties.database}</div>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                 </li>

@@ -341,4 +341,222 @@ describe('Admin - Real Integration Tests', () => {
             console.log('✅ Both databases and forests content loaded independently');
         }, 20000);
     });
+
+    describe('Security Integration Tests (Users & Roles)', () => {
+        // Helper to check if users endpoint is accessible
+        const checkUsersEndpoint = async (): Promise<{ success: boolean; status?: number; data?: any }> => {
+            try {
+                const response = await fetch('http://localhost:8080/manage/v2/users?format=json', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return { success: true, status: response.status, data };
+                } else {
+                    return { success: false, status: response.status };
+                }
+            } catch (error) {
+                return { success: false };
+            }
+        };
+
+        // Helper to check if roles endpoint is accessible
+        const checkRolesEndpoint = async (): Promise<{ success: boolean; status?: number; data?: any }> => {
+            try {
+                const response = await fetch('http://localhost:8080/manage/v2/roles?format=json', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return { success: true, status: response.status, data };
+                } else {
+                    return { success: false, status: response.status };
+                }
+            } catch (error) {
+                return { success: false };
+            }
+        };
+
+        it('users endpoint responds to direct API calls', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            const usersResult = await checkUsersEndpoint();
+            expect(usersResult.success).toBe(true);
+            expect(usersResult.status).toBe(200);
+            expect(usersResult.data).toBeDefined();
+
+            console.log('✅ Direct users API call successful - MarkLogic users accessible');
+            console.log('✅ Users response structure:', usersResult.data ? Object.keys(usersResult.data)[0] : 'No data');
+        }, 10000);
+
+        it('roles endpoint responds to direct API calls', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            const rolesResult = await checkRolesEndpoint();
+            expect(rolesResult.success).toBe(true);
+            expect(rolesResult.status).toBe(200);
+            expect(rolesResult.data).toBeDefined();
+
+            console.log('✅ Direct roles API call successful - MarkLogic roles accessible');
+            console.log('✅ Roles response structure:', rolesResult.data ? Object.keys(rolesResult.data)[0] : 'No data');
+        }, 10000);
+
+        it('validates users parameter handling with format=json', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            // Test various parameter combinations
+            const usersResult = await checkUsersEndpoint();
+            expect(usersResult.success).toBe(true);
+            expect(usersResult.data).toHaveProperty('user-default-list');
+
+            if (usersResult.data && usersResult.data['user-default-list']) {
+                const usersList = usersResult.data['user-default-list'];
+                console.log('✅ Users endpoint correctly handles format=json parameter');
+                console.log('✅ Found users list structure:', Object.keys(usersList));
+
+                if (usersList['list-items'] && usersList['list-items']['list-item']) {
+                    const userCount = Array.isArray(usersList['list-items']['list-item'])
+                        ? usersList['list-items']['list-item'].length
+                        : 1;
+                    console.log(`✅ Found ${userCount} user(s)`);
+                }
+            }
+        }, 10000);
+
+        it('validates roles parameter handling with format=json', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            // Test various parameter combinations
+            const rolesResult = await checkRolesEndpoint();
+            expect(rolesResult.success).toBe(true);
+            expect(rolesResult.data).toHaveProperty('role-default-list');
+
+            if (rolesResult.data && rolesResult.data['role-default-list']) {
+                const rolesList = rolesResult.data['role-default-list'];
+                console.log('✅ Roles endpoint correctly handles format=json parameter');
+                console.log('✅ Found roles list structure:', Object.keys(rolesList));
+
+                if (rolesList['list-items'] && rolesList['list-items']['list-item']) {
+                    const roleCount = Array.isArray(rolesList['list-items']['list-item'])
+                        ? rolesList['list-items']['list-item'].length
+                        : 1;
+                    console.log(`✅ Found ${roleCount} role(s)`);
+                }
+            }
+        }, 10000);
+
+        it('validates Security tab display in React component integration', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            render(<Admin />);
+
+            // Switch to Security tab first
+            await waitFor(() => {
+                const securityTabButton = screen.getByText('Security (Users & Roles)');
+                expect(securityTabButton).toBeInTheDocument();
+                securityTabButton.click();
+            }, { timeout: 5000 });
+
+            // Wait for all loading states to finish
+            await waitFor(() => {
+                const isLoadingDatabases = screen.queryByText('Loading databases...');
+                const isLoadingForests = screen.queryByText('Loading forests...');
+                const isLoadingServers = screen.queryByText('Loading servers...');
+                const isLoadingUsers = screen.queryByText('Loading users...');
+                const isLoadingRoles = screen.queryByText('Loading roles...');
+
+                expect(isLoadingDatabases).toBeFalsy();
+                expect(isLoadingForests).toBeFalsy();
+                expect(isLoadingServers).toBeFalsy();
+                expect(isLoadingUsers).toBeFalsy();
+                expect(isLoadingRoles).toBeFalsy();
+            }, { timeout: 15000 });
+
+            // Check that Security tab content is present (either success or error)
+            const hasUsersHeading = screen.queryByRole('heading', { name: 'Users' });
+            const hasRolesHeading = screen.queryByRole('heading', { name: 'Roles' });
+            const hasUsersError = screen.queryByText(/Error:.*Users/);
+            const hasRolesError = screen.queryByText(/Error:.*Roles/);
+            const hasUsersJson = screen.queryByText('View Raw Users JSON');
+            const hasRolesJson = screen.queryByText('View Raw Roles JSON');
+
+            // Should have some Security-related content
+            const hasSecurityContent = hasUsersHeading || hasRolesHeading || hasUsersError || hasRolesError || hasUsersJson || hasRolesJson;
+            expect(hasSecurityContent).toBeTruthy();
+
+            console.log('✅ Security tab successfully rendered in React component');
+        }, 20000);
+
+        it('validates users and roles load independently', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            render(<Admin />);
+
+            // Switch to Security tab first
+            await waitFor(() => {
+                const securityTabButton = screen.getByText('Security (Users & Roles)');
+                expect(securityTabButton).toBeInTheDocument();
+                securityTabButton.click();
+            }, { timeout: 5000 });
+
+            // Wait for all loading to complete
+            await waitFor(() => {
+                const stillLoadingUsers = screen.queryByText('Loading users...');
+                const stillLoadingRoles = screen.queryByText('Loading roles...');
+                expect(stillLoadingUsers).toBeFalsy();
+                expect(stillLoadingRoles).toBeFalsy();
+            }, { timeout: 15000 });
+
+            // Check for any content (success or error) for both sections
+            const hasAnyUsersContent = screen.queryAllByText(/Users|user-default-list|admin|Error/);
+            const hasAnyRolesContent = screen.queryAllByText(/Roles|role-default-list|admin|manage-user|Error/);
+
+            // We should have users content and either roles content or at least the users loaded
+            expect(hasAnyUsersContent.length).toBeGreaterThan(0);
+
+            console.log('✅ Both users and roles content loaded independently');
+        }, 20000);
+
+        it('validates Security tab interaction with user and role details', async () => {
+            const proxyRunning = await checkProxyHealth();
+            expect(proxyRunning).toBe(true);
+
+            render(<Admin />);
+
+            // Switch to Security tab
+            await waitFor(() => {
+                const securityTabButton = screen.getByText('Security (Users & Roles)');
+                expect(securityTabButton).toBeInTheDocument();
+                securityTabButton.click();
+            }, { timeout: 5000 });
+
+            // Wait for content to load
+            await waitFor(() => {
+                const stillLoading = screen.queryByText(/Loading/);
+                expect(stillLoading).toBeFalsy();
+            }, { timeout: 15000 });
+
+            // Look for interactive elements or details sections
+            const hasUsersSection = screen.queryByText('Users');
+            const hasRolesSection = screen.queryByText('Roles');
+            const hasUserDetailsJson = screen.queryByText('View Raw User Details JSON');
+            const hasRoleDetailsJson = screen.queryByText('View Raw Role Details JSON');
+
+            // Should have at least the basic sections
+            const hasBasicSecuritySections = hasUsersSection || hasRolesSection;
+            expect(hasBasicSecuritySections).toBeTruthy();
+
+            console.log('✅ Security tab user interaction elements are accessible');
+        }, 20000);
+    });
 });

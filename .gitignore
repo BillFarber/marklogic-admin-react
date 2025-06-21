@@ -52,11 +52,10 @@ Thumbs.db
 
 # Gradle
 .gradle/
-gradle-wrapper.jar
-gradle-wrapper.properties
 
 # Spring Boot
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 *.class

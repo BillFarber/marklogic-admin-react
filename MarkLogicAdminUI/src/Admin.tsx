@@ -6,6 +6,7 @@ function Admin() {
     const [forests, setForests] = React.useState<any>(null);
     const [forestDetails, setForestDetails] = React.useState<Record<string, any>>({});
     const [servers, setServers] = React.useState<any>(null);
+    const [serverDetails, setServerDetails] = React.useState<Record<string, any>>({});
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
@@ -119,7 +120,38 @@ function Admin() {
                 }
                 return res.json();
             })
-            .then(data => setServers(data))
+            .then(async (data) => {
+                setServers(data);
+
+                // Fetch details for each server using nameref and groupnameref
+                if (data && Array.isArray(data['server-default-list']?.['list-items']?.['list-item'])) {
+                    const serverList = data['server-default-list']['list-items']['list-item'];
+                    const details: Record<string, any> = {};
+
+                    // Fetch details for each server in parallel
+                    const detailPromises = serverList
+                        .filter((server: any) => server.nameref && server.groupnameref)
+                        .map(async (server: any) => {
+                            try {
+                                const detailUrl = `http://localhost:8080/manage/v2/servers/${server.nameref}/properties?group-id=${server.groupnameref}&format=json`;
+                                const response = await fetch(detailUrl, {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'application/json' }
+                                });
+
+                                if (response.ok) {
+                                    const detailData = await response.json();
+                                    details[server.nameref] = detailData;
+                                }
+                            } catch (err) {
+                                console.warn(`Failed to fetch details for server ${server.nameref}:`, err);
+                            }
+                        });
+
+                    await Promise.allSettled(detailPromises);
+                    setServerDetails(details);
+                }
+            })
             .catch(e => setError(prev => prev ? `${prev}; Servers: ${e.message}` : `Servers: ${e.message}`));
 
         // Wait for all requests to complete, then stop loading
@@ -352,7 +384,38 @@ function Admin() {
                                             <div><strong>Type:</strong> {server.kindref || 'N/A'}</div>
                                             <div><strong>Group:</strong> {server.groupnameref || 'Default'}</div>
                                             {server['content-db'] && <div><strong>Content Database:</strong> {server['content-db']}</div>}
-                                            {server['modules-db'] && <div><strong>Modules Database:</strong> {server['modules-db']}</div>}
+                                            {server['modules-db'] && <div><strong>Modules Database:</strong> {server['modules-db']}</div>}                                            {/* Server details from properties endpoint */}
+                                            {serverDetails[server.nameref] && (() => {
+                                                const details = serverDetails[server.nameref];
+                                                const serverDefault = details['server-default'];
+                                                if (!serverDefault) return null;
+
+                                                // Extract relation data
+                                                const relations = serverDefault.relations?.['relation-group'] || [];
+                                                const databaseRelations = relations.find((r: any) => r.typeref === 'databases');
+                                                const groupRelations = relations.find((r: any) => r.typeref === 'groups');
+
+                                                return (
+                                                    <>
+                                                        <hr style={{ margin: '8px 0', borderColor: '#777' }} />
+                                                        <div><strong>Server ID:</strong> {serverDefault.id}</div>
+                                                        <div><strong>Server Kind:</strong> {serverDefault['server-kind']}</div>
+                                                        {groupRelations?.relation?.[0] && (
+                                                            <div><strong>Group:</strong> {groupRelations.relation[0].nameref}</div>
+                                                        )}
+                                                        {databaseRelations?.relation && (
+                                                            <>
+                                                                {databaseRelations.relation.map((db: any, idx: number) => (
+                                                                    <div key={idx}><strong>{db.roleref === 'database' ? 'Content DB' : db.roleref === 'modules' ? 'Modules DB' : 'Database'}:</strong> {db.nameref}</div>
+                                                                ))}
+                                                            </>
+                                                        )}
+                                                        {serverDefault.meta?.uri && (
+                                                            <div><strong>Management URI:</strong> {serverDefault.meta.uri}</div>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                 </li>

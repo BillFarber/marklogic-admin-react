@@ -27,8 +27,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 public class ServersController {
@@ -139,6 +141,73 @@ public class ServersController {
             } else {
                 return ResponseEntity.status(response.code())
                         .body("{\"error\":\"MarkLogic returned status: " + response.code() + "\"}");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(502)
+                    .body("{\"error\":\"Failed to proxy to MarkLogic: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @GetMapping("/manage/v2/servers/{idOrName}/properties")
+    public ResponseEntity<String> getServerProperties(
+            @PathVariable String idOrName,
+            @RequestParam(value = "group-id", required = true) String groupId,
+            @RequestParam(value = "format", required = false, defaultValue = "json") String format) {
+
+        // Handle null format and set default
+        if (format == null) {
+            format = "json";
+        }
+
+        // Validate format parameter
+        if (!format.equals("json") && !format.equals("xml")) {
+            return ResponseEntity.badRequest()
+                    .body("{\"error\":\"Invalid format parameter. Must be 'json' or 'xml'\"}");
+        }
+
+        // Validate group-id parameter
+        if (groupId == null || groupId.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("{\"error\":\"group-id parameter is required\"}");
+        }
+
+        try {
+            // Get the underlying OkHttpClient from the MarkLogic DatabaseClient
+            OkHttpClient okHttpClient = (OkHttpClient) databaseClient.getClientImplementation();
+
+            // Build the URL for the MarkLogic management API
+            HttpUrl.Builder urlBuilder = HttpUrl
+                    .parse(marklogicSchema + "://" + marklogicHost + ":8002/manage/v2/servers/" + idOrName
+                            + "/properties")
+                    .newBuilder();
+            urlBuilder.addQueryParameter("group-id", groupId);
+            urlBuilder.addQueryParameter("format", format);
+
+            HttpUrl url = urlBuilder.build();
+
+            // Create and execute the request
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .build();
+
+            try (Response response = okHttpClient.newCall(request).execute()) {
+                if (response.body() == null) {
+                    return ResponseEntity.status(502)
+                            .body("{\"error\":\"No response from MarkLogic server\"}");
+                }
+
+                String responseBody = response.body().string();
+
+                if (response.isSuccessful()) {
+                    // Set appropriate content type based on format
+                    MediaType contentType = format.equals("xml") ? MediaType.APPLICATION_XML
+                            : MediaType.APPLICATION_JSON;
+                    return ResponseEntity.ok().contentType(contentType).body(responseBody);
+                } else {
+                    return ResponseEntity.status(response.code())
+                            .body("{\"error\":\"MarkLogic returned status: " + response.code() + "\"}");
+                }
             }
         } catch (Exception e) {
             return ResponseEntity.status(502)

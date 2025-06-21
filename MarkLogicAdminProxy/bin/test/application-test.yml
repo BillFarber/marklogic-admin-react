@@ -1,0 +1,16 @@
+server:
+  port: 0
+
+marklogic:
+  host: localhost
+  port: 8000
+  username: admin
+  password: admin
+  schema: http
+
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false

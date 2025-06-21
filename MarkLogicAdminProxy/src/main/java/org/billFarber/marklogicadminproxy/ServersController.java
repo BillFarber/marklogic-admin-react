@@ -1,18 +1,7 @@
 package org.billFarber.marklogicadminproxy;
 
 /**
- * Cont        // Validate view parameter
-        if (view != null && !view.trim().isEmpty() && !view.equals("default") && !view.equals("schema") && !view.equals("status") 
-                && !view.equals("metrics") && !view.equals("package")) {
-            return ResponseEntity.badRequest()
-                    .body("{\"error\":\"Invalid view parameter. Must be 'default', 'schema', 'status', 'metrics', or 'package'\"}");
-        }
-
-        // Validate fullrefs parameter
-        if (fullrefs != null && !fullrefs.trim().isEmpty() && !fullrefs.equals("true") && !fullrefs.equals("false")) {
-            return ResponseEntity.badRequest()
-                    .body("{\"error\":\"Invalid fullrefs parameter. Must be 'true' or 'false'\"}");
-        }roxying MarkLogic Server Management API endpoints.
+ * Controller for proxying MarkLogic Server Management API endpoints.
  * 
  * API Documentation:
  * https://docs.marklogic.com/REST/GET/manage/v2/servers

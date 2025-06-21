@@ -384,35 +384,29 @@ function Admin() {
                                             <div><strong>Type:</strong> {server.kindref || 'N/A'}</div>
                                             <div><strong>Group:</strong> {server.groupnameref || 'Default'}</div>
                                             {server['content-db'] && <div><strong>Content Database:</strong> {server['content-db']}</div>}
-                                            {server['modules-db'] && <div><strong>Modules Database:</strong> {server['modules-db']}</div>}                                            {/* Server details from properties endpoint */}
+                                            {server['modules-db'] && <div><strong>Modules Database:</strong> {server['modules-db']}</div>}
+
+                                            {/* Server details from properties endpoint */}
                                             {serverDetails[server.nameref] && (() => {
                                                 const details = serverDetails[server.nameref];
-                                                const serverDefault = details['server-default'];
-                                                if (!serverDefault) return null;
-
-                                                // Extract relation data
-                                                const relations = serverDefault.relations?.['relation-group'] || [];
-                                                const databaseRelations = relations.find((r: any) => r.typeref === 'databases');
-                                                const groupRelations = relations.find((r: any) => r.typeref === 'groups');
+                                                // The new structure has properties directly at the root level
 
                                                 return (
                                                     <>
                                                         <hr style={{ margin: '8px 0', borderColor: '#777' }} />
-                                                        <div><strong>Server ID:</strong> {serverDefault.id}</div>
-                                                        <div><strong>Server Kind:</strong> {serverDefault['server-kind']}</div>
-                                                        {groupRelations?.relation?.[0] && (
-                                                            <div><strong>Group:</strong> {groupRelations.relation[0].nameref}</div>
-                                                        )}
-                                                        {databaseRelations?.relation && (
-                                                            <>
-                                                                {databaseRelations.relation.map((db: any, idx: number) => (
-                                                                    <div key={idx}><strong>{db.roleref === 'database' ? 'Content DB' : db.roleref === 'modules' ? 'Modules DB' : 'Database'}:</strong> {db.nameref}</div>
-                                                                ))}
-                                                            </>
-                                                        )}
-                                                        {serverDefault.meta?.uri && (
-                                                            <div><strong>Management URI:</strong> {serverDefault.meta.uri}</div>
-                                                        )}
+                                                        <div><strong>Enabled:</strong> {details.enabled ? 'Yes' : 'No'}</div>
+                                                        {details.port && <div><strong>Port:</strong> {details.port}</div>}
+                                                        {details['server-type'] && <div><strong>Server Type:</strong> {details['server-type']}</div>}
+                                                        {details.authentication && <div><strong>Authentication:</strong> {details.authentication}</div>}
+                                                        {details['content-database'] && <div><strong>Content Database:</strong> {details['content-database']}</div>}
+                                                        {details['modules-database'] && <div><strong>Modules Database:</strong> {details['modules-database']}</div>}
+                                                        {details.root && <div><strong>Root:</strong> {details.root}</div>}
+                                                        {details.threads && <div><strong>Threads:</strong> {details.threads}</div>}
+                                                        {details['request-timeout'] && <div><strong>Request Timeout:</strong> {details['request-timeout']}s</div>}
+                                                        {details['session-timeout'] && <div><strong>Session Timeout:</strong> {details['session-timeout']}s</div>}
+                                                        {details['ssl-hostname'] && <div><strong>SSL Hostname:</strong> {details['ssl-hostname']}</div>}
+                                                        {details['default-user'] && <div><strong>Default User:</strong> {details['default-user']}</div>}
+                                                        {details['public-port'] !== undefined && <div><strong>Public Port:</strong> {details['public-port'] ? 'Yes' : 'No'}</div>}
                                                     </>
                                                 );
                                             })()}

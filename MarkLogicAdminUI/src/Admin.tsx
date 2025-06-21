@@ -7,21 +7,25 @@ function Admin() {
     const [forestDetails, setForestDetails] = React.useState<Record<string, any>>({});
     const [servers, setServers] = React.useState<any>(null);
     const [serverDetails, setServerDetails] = React.useState<Record<string, any>>({});
+    const [users, setUsers] = React.useState<any>(null);
+    const [userDetails, setUserDetails] = React.useState<Record<string, any>>({});
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
     const [hoveredForest, setHoveredForest] = React.useState<string | null>(null);
     const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
+    const [hoveredUser, setHoveredUser] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         document.title = 'MarkLogic Admin';
 
-        // Make requests to databases, forests, and servers endpoints
+        // Make requests to databases, forests, servers, and users endpoints
         const databasesUrl = 'http://localhost:8080/manage/v2/databases';
         const forestsUrl = 'http://localhost:8080/manage/v2/forests?format=json';
         const serversUrl = 'http://localhost:8080/manage/v2/servers?format=json';
+        const usersUrl = 'http://localhost:8080/manage/v2/users?format=json';
 
-        // Create promises for all three endpoints
+        // Create promises for all four endpoints
         const databasesPromise = fetch(databasesUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
@@ -154,8 +158,52 @@ function Admin() {
             })
             .catch(e => setError(prev => prev ? `${prev}; Servers: ${e.message}` : `Servers: ${e.message}`));
 
+        const usersPromise = fetch(usersUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(async (data) => {
+                setUsers(data);
+
+                // Fetch details for each user using nameref
+                if (data && Array.isArray(data['user-default-list']?.['list-items']?.['list-item'])) {
+                    const userList = data['user-default-list']['list-items']['list-item'];
+                    const details: Record<string, any> = {};
+
+                    // Fetch details for each user in parallel
+                    const detailPromises = userList
+                        .filter((user: any) => user.nameref)
+                        .map(async (user: any) => {
+                            try {
+                                const detailUrl = `http://localhost:8080/manage/v2/users/${user.nameref}/properties?format=json`;
+                                const response = await fetch(detailUrl, {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'application/json' }
+                                });
+
+                                if (response.ok) {
+                                    const detailData = await response.json();
+                                    details[user.nameref] = detailData;
+                                }
+                            } catch (err) {
+                                console.warn(`Failed to fetch details for user ${user.nameref}:`, err);
+                            }
+                        });
+
+                    await Promise.allSettled(detailPromises);
+                    setUserDetails(details);
+                }
+            })
+            .catch(e => setError(prev => prev ? `${prev}; Users: ${e.message}` : `Users: ${e.message}`));
+
         // Wait for all requests to complete, then stop loading
-        Promise.allSettled([databasesPromise, forestsPromise, serversPromise])
+        Promise.allSettled([databasesPromise, forestsPromise, serversPromise, usersPromise])
             .then(() => setLoading(false));
     }, []);
 
@@ -166,6 +214,7 @@ function Admin() {
             {loading && <div>Loading database details...</div>}
             {loading && <div>Loading forests...</div>}
             {loading && <div>Loading servers...</div>}
+            {loading && <div>Loading users...</div>}
             {error && <div style={{ color: 'red' }}>Error: {error}</div>}
 
             {/* Databases section */}
@@ -418,6 +467,91 @@ function Admin() {
                 </section>
             )}
 
+            {/* Users section */}
+            {users && Array.isArray(users['user-default-list']?.['list-items']?.['list-item']) && (
+                <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                    <h2>Users</h2>
+                    <ul style={{ background: '#d45a00', color: '#fff', padding: 16, borderRadius: 8 }}>
+                        {users['user-default-list']['list-items']['list-item']
+                            .filter((user: any) => user.nameref)
+                            .map((user: any, idx: number) => (
+                                <li key={user.nameref || idx} data-idref={user.idref} style={{
+                                    marginBottom: '8px',
+                                    position: 'relative',
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    backgroundColor: hoveredUser === user.nameref ? '#e66a10' : 'transparent',
+                                    transition: 'background-color 0.2s ease'
+                                }}>
+                                    <strong
+                                        style={{
+                                            cursor: 'pointer',
+                                            color: hoveredUser === user.nameref ? '#FFB74D' : '#fff'
+                                        }}
+                                        onMouseEnter={() => setHoveredUser(user.nameref)}
+                                        onMouseLeave={() => setHoveredUser(null)}
+                                    >
+                                        {user.nameref}
+                                    </strong>
+                                    <div style={{ fontSize: '0.9em', color: '#ccc', marginTop: '4px' }}>
+                                        Type: User | ID: {user.idref || 'N/A'}
+                                        {user.description && ` | ${user.description}`}
+                                    </div>
+
+                                    {/* Hover tooltip for users */}
+                                    {hoveredUser === user.nameref && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: '0',
+                                            backgroundColor: '#b04500',
+                                            border: '1px solid #d45a00',
+                                            borderRadius: '4px',
+                                            padding: '8px',
+                                            zIndex: 1000,
+                                            minWidth: '300px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                                        }}>
+                                            <div><strong>User Details:</strong></div>
+                                            <div><strong>Name:</strong> {user.nameref}</div>
+                                            <div><strong>ID:</strong> {user.idref || 'N/A'}</div>
+                                            <div><strong>URI:</strong> {user.uriref || 'N/A'}</div>
+                                            {user.description && <div><strong>Description:</strong> {user.description}</div>}
+
+                                            {userDetails[user.nameref] && (() => {
+                                                const details = userDetails[user.nameref];
+                                                return (
+                                                    <>
+                                                        <hr style={{ margin: '8px 0', borderColor: '#d45a00' }} />
+                                                        <div><strong>User Properties:</strong></div>
+                                                        <div><strong>User Name:</strong> {details['user-name']}</div>
+                                                        {details.description && <div><strong>Description:</strong> {details.description}</div>}
+                                                        {details.role && Array.isArray(details.role) && (
+                                                            <div><strong>Roles:</strong> {details.role.join(', ')}</div>
+                                                        )}
+                                                        {details.role && !Array.isArray(details.role) && (
+                                                            <div><strong>Role:</strong> {details.role}</div>
+                                                        )}
+                                                        {details['external-names'] && (
+                                                            <div><strong>External Names:</strong> {JSON.stringify(details['external-names'])}</div>
+                                                        )}
+                                                        {details.permissions && (
+                                                            <div><strong>Permissions:</strong> {JSON.stringify(details.permissions)}</div>
+                                                        )}
+                                                        {details.collections && (
+                                                            <div><strong>Collections:</strong> {JSON.stringify(details.collections)}</div>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                    </ul>
+                </section>
+            )}
+
             {/* Raw JSON data sections */}
             {databases && (
                 <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
@@ -446,12 +580,31 @@ function Admin() {
                 </details>
             )}
 
+            {users && (
+                <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Users JSON</summary>
+                    <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
+                        {JSON.stringify(users, null, 2)}
+                    </pre>
+                </details>
+            )}
+
             {/* Raw Database Details section */}
             {Object.keys(databaseDetails).length > 0 && (
                 <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
                     <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw Database Details JSON</summary>
                     <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
                         {JSON.stringify(databaseDetails, null, 2)}
+                    </pre>
+                </details>
+            )}
+
+            {/* Raw User Details section */}
+            {Object.keys(userDetails).length > 0 && (
+                <details style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Raw User Details JSON</summary>
+                    <pre style={{ background: '#f4f4f4', color: '#333', padding: 16, borderRadius: 8, marginTop: 8 }}>
+                        {JSON.stringify(userDetails, null, 2)}
                     </pre>
                 </details>
             )}

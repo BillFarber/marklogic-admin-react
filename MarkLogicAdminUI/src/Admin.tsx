@@ -8,6 +8,8 @@ function Admin() {
     const [forestDetails, setForestDetails] = React.useState<Record<string, any>>({});
     const [servers, setServers] = React.useState<any>(null);
     const [serverDetails, setServerDetails] = React.useState<Record<string, any>>({});
+    const [groups, setGroups] = React.useState<any>(null);
+    const [groupDetails, setGroupDetails] = React.useState<Record<string, any>>({});
     const [users, setUsers] = React.useState<any>(null);
     const [userDetails, setUserDetails] = React.useState<Record<string, any>>({});
     const [roles, setRoles] = React.useState<any>(null);
@@ -17,6 +19,7 @@ function Admin() {
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
     const [hoveredForest, setHoveredForest] = React.useState<string | null>(null);
     const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
+    const [hoveredGroup, setHoveredGroup] = React.useState<string | null>(null);
     const [hoveredUser, setHoveredUser] = React.useState<string | null>(null);
     const [hoveredRole, setHoveredRole] = React.useState<string | null>(null);
     const [activeTab, setActiveTab] = React.useState<string>('data');
@@ -24,14 +27,15 @@ function Admin() {
     React.useEffect(() => {
         document.title = 'MarkLogic Admin';
 
-        // Make requests to databases, forests, servers, users, and roles endpoints
+        // Make requests to databases, forests, servers, groups, users, and roles endpoints
         const databasesUrl = 'http://localhost:8080/manage/v2/databases';
         const forestsUrl = 'http://localhost:8080/manage/v2/forests?format=json';
         const serversUrl = 'http://localhost:8080/manage/v2/servers?format=json';
+        const groupsUrl = 'http://localhost:8080/manage/v2/groups?format=json';
         const usersUrl = 'http://localhost:8080/manage/v2/users?format=json';
         const rolesUrl = 'http://localhost:8080/manage/v2/roles?format=json';
 
-        // Create promises for all five endpoints
+        // Create promises for all six endpoints
         const databasesPromise = fetch(databasesUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
@@ -164,6 +168,50 @@ function Admin() {
             })
             .catch(e => setError(prev => prev ? `${prev}; Servers: ${e.message}` : `Servers: ${e.message}`));
 
+        const groupsPromise = fetch(groupsUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(async (data) => {
+                setGroups(data);
+
+                // Fetch details for each group using nameref
+                if (data && Array.isArray(data['group-default-list']?.['list-items']?.['list-item'])) {
+                    const groupList = data['group-default-list']['list-items']['list-item'];
+                    const details: Record<string, any> = {};
+
+                    // Fetch details for each group in parallel
+                    const detailPromises = groupList
+                        .filter((group: any) => group.nameref)
+                        .map(async (group: any) => {
+                            try {
+                                const detailUrl = `http://localhost:8080/manage/v2/groups/${group.nameref}/properties?format=json`;
+                                const response = await fetch(detailUrl, {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'application/json' }
+                                });
+
+                                if (response.ok) {
+                                    const detailData = await response.json();
+                                    details[group.nameref] = detailData;
+                                }
+                            } catch (err) {
+                                console.warn(`Failed to fetch details for group ${group.nameref}:`, err);
+                            }
+                        });
+
+                    await Promise.allSettled(detailPromises);
+                    setGroupDetails(details);
+                }
+            })
+            .catch(e => setError(prev => prev ? `${prev}; Groups: ${e.message}` : `Groups: ${e.message}`));
+
         const usersPromise = fetch(usersUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
@@ -253,7 +301,7 @@ function Admin() {
             .catch(e => setError(prev => prev ? `${prev}; Roles: ${e.message}` : `Roles: ${e.message}`));
 
         // Wait for all requests to complete, then stop loading
-        Promise.allSettled([databasesPromise, forestsPromise, serversPromise, usersPromise, rolesPromise])
+        Promise.allSettled([databasesPromise, forestsPromise, serversPromise, groupsPromise, usersPromise, rolesPromise])
             .then(() => setLoading(false));
     }, []);
 
@@ -268,6 +316,7 @@ function Admin() {
                     <div>Loading database details...</div>
                     <div>Loading forests...</div>
                     <div>Loading servers...</div>
+                    <div>Loading groups...</div>
                     <div>Loading users...</div>
                     <div>Loading roles...</div>
                 </div>
@@ -312,7 +361,7 @@ function Admin() {
                             marginRight: '4px'
                         }}
                     >
-                        Infrastructure (Servers)
+                        Infrastructure (Servers & Groups)
                     </button>
                     <button
                         onClick={() => setActiveTab('users')}
@@ -352,6 +401,10 @@ function Admin() {
                             serverDetails={serverDetails}
                             hoveredServer={hoveredServer}
                             setHoveredServer={setHoveredServer}
+                            groups={groups}
+                            groupDetails={groupDetails}
+                            hoveredGroup={hoveredGroup}
+                            setHoveredGroup={setHoveredGroup}
                         />
                     )}
 

@@ -15,11 +15,26 @@ describe('InfrastructureTab', () => {
         }
     };
 
+    const mockGroups = {
+        'group-default-list': {
+            'list-items': {
+                'list-item': [
+                    { nameref: 'Default', idref: 'group-1' },
+                    { nameref: 'Analytics', idref: 'group-2' }
+                ]
+            }
+        }
+    };
+
     const defaultProps = {
         servers: mockServers,
         serverDetails: {},
         hoveredServer: null,
-        setHoveredServer: vi.fn()
+        setHoveredServer: vi.fn(),
+        groups: mockGroups,
+        groupDetails: {},
+        hoveredGroup: null,
+        setHoveredGroup: vi.fn()
     };
 
     beforeEach(() => {
@@ -34,10 +49,19 @@ describe('InfrastructureTab', () => {
         expect(screen.getByText('App-Services')).toBeInTheDocument();
     });
 
-    it('renders raw JSON section for servers data', () => {
+    it('renders groups section when groups data is provided', () => {
+        render(<InfrastructureTab {...defaultProps} />);
+
+        expect(screen.getByText('Groups')).toBeInTheDocument();
+        expect(screen.getByText('Default')).toBeInTheDocument();
+        expect(screen.getByText('Analytics')).toBeInTheDocument();
+    });
+
+    it('renders raw JSON sections for both servers and groups data', () => {
         render(<InfrastructureTab {...defaultProps} />);
 
         expect(screen.getByText('View Raw Servers JSON')).toBeInTheDocument();
+        expect(screen.getByText('View Raw Groups JSON')).toBeInTheDocument();
     });
 
     it('handles empty servers data gracefully', () => {
@@ -48,8 +72,26 @@ describe('InfrastructureTab', () => {
 
         render(<InfrastructureTab {...propsWithEmptyServers} />);
 
-        // Should render without crashing, but raw JSON section won't be shown for null data
+        // Should render groups but not servers
+        expect(screen.getByText('Groups')).toBeInTheDocument();
+        expect(screen.queryByText('Servers')).not.toBeInTheDocument();
+        expect(screen.getByText('View Raw Groups JSON')).toBeInTheDocument();
         expect(screen.queryByText('View Raw Servers JSON')).not.toBeInTheDocument();
+    });
+
+    it('handles empty groups data gracefully', () => {
+        const propsWithEmptyGroups = {
+            ...defaultProps,
+            groups: null
+        };
+
+        render(<InfrastructureTab {...propsWithEmptyGroups} />);
+
+        // Should render servers but not groups
+        expect(screen.getByText('Servers')).toBeInTheDocument();
+        expect(screen.queryByText('Groups')).not.toBeInTheDocument();
+        expect(screen.getByText('View Raw Servers JSON')).toBeInTheDocument();
+        expect(screen.queryByText('View Raw Groups JSON')).not.toBeInTheDocument();
     });
 
     it('calls setHoveredServer when provided', () => {
@@ -66,5 +108,21 @@ describe('InfrastructureTab', () => {
 
         expect(screen.getByText('Servers')).toBeInTheDocument();
         expect(screen.getByText('Admin')).toBeInTheDocument();
+    });
+
+    it('calls setHoveredGroup when provided', () => {
+        const mockSetHoveredGroup = vi.fn();
+        const propsWithGroupDetails = {
+            ...defaultProps,
+            setHoveredGroup: mockSetHoveredGroup,
+            groupDetails: {
+                'Default': { 'group-name': 'Default', 'group-id': 'group-1' }
+            }
+        };
+
+        render(<InfrastructureTab {...propsWithGroupDetails} />);
+
+        expect(screen.getByText('Groups')).toBeInTheDocument();
+        expect(screen.getByText('Default')).toBeInTheDocument();
     });
 });

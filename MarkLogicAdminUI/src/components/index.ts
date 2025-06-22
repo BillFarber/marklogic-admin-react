@@ -10,6 +10,8 @@ export { InfrastructureTab } from './InfrastructureTab';
 export { DatabasesSection } from './DatabasesSection';
 export { ForestsSection } from './ForestsSection';
 export { ServersSection } from './ServersSection';
+export { GroupsSection } from './GroupsSection';
 export { DatabaseItem } from './DatabaseItem';
 export { ForestItem } from './ForestItem';
 export { ServerItem } from './ServerItem';
+export { GroupItem } from './GroupItem';

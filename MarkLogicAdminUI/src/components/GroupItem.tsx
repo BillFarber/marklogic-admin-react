@@ -1,0 +1,153 @@
+import React from 'react';
+
+interface GroupItemProps {
+    group: any;
+    groupDetails: Record<string, any>;
+    hoveredGroup: string | null;
+    setHoveredGroup: (group: string | null) => void;
+}
+
+export function GroupItem({ group, groupDetails, hoveredGroup, setHoveredGroup }: GroupItemProps) {
+    const isHovered = hoveredGroup === group.idref;
+    const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+
+    const handleMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setHoveredGroup(group.idref);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredGroup(null);
+        }, 300);
+        setHoverTimeout(timeout);
+    };
+
+    const handleTooltipMouseEnter = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    const handleTooltipMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredGroup(null);
+        }, 100);
+        setHoverTimeout(timeout);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
+
+    return (
+        <li
+            key={group.nameref}
+            data-idref={group.idref}
+            style={{
+                marginBottom: '8px',
+                position: 'relative',
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: isHovered ? '#5a3d7b' : 'transparent',
+                transition: 'background-color 0.2s ease'
+            }}
+        >
+            <strong
+                style={{
+                    cursor: 'pointer',
+                    color: isHovered ? '#FF7043' : '#fff'
+                }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+                {group.nameref}
+            </strong>
+            <div style={{ fontSize: '0.9em', color: '#ccc', marginTop: '4px' }}>
+                ID: {group.idref}
+            </div>
+
+            {/* Detailed hover tooltip */}
+            {isHovered && groupDetails[group.nameref] && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '0',
+                        left: '100%',
+                        marginLeft: '10px',
+                        backgroundColor: '#333',
+                        color: '#fff',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        zIndex: 1000,
+                        minWidth: '350px',
+                        maxWidth: '500px',
+                        fontSize: '0.85em',
+                        lineHeight: '1.4',
+                        border: '1px solid #555'
+                    }}
+                    onMouseEnter={handleTooltipMouseEnter}
+                    onMouseLeave={handleTooltipMouseLeave}
+                >
+                    <div style={{ marginBottom: '12px' }}>
+                        <strong style={{ color: '#FF7043', fontSize: '1.1em' }}>
+                            {group.nameref}
+                        </strong>
+                    </div>
+
+                    {groupDetails[group.nameref] && (
+                        <div style={{ display: 'grid', gap: '8px' }}>
+                            {/* Basic Group Information */}
+                            <div>
+                                <strong style={{ color: '#4FC3F7' }}>ID:</strong>{' '}
+                                {groupDetails[group.nameref]['group-properties']?.['group-id'] || group.idref}
+                            </div>
+                            <div>
+                                <strong style={{ color: '#4FC3F7' }}>Name:</strong>{' '}
+                                {groupDetails[group.nameref]['group-properties']?.['group-name'] || group.nameref}
+                            </div>
+
+                            {/* List information */}
+                            {groupDetails[group.nameref]['group-properties']?.['list-cache-partitions'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>List Cache Partitions:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['list-cache-partitions']}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['list-cache-size'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>List Cache Size:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['list-cache-size']}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['compressed-tree-cache-size'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>Compressed Tree Cache Size:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['compressed-tree-cache-size']}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['expanded-tree-cache-size'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>Expanded Tree Cache Size:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['expanded-tree-cache-size']}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+        </li>
+    );
+}

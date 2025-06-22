@@ -57,14 +57,14 @@ export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: Rol
                 position: 'relative',
                 padding: '8px',
                 borderRadius: '4px',
-                backgroundColor: isHovered ? '#A0522D' : 'transparent',
+                backgroundColor: isHovered ? '#4a7c59' : 'transparent', // Lighter forest green to match users
                 transition: 'background-color 0.2s ease'
             }}
         >
             <strong
                 style={{
                     cursor: 'pointer',
-                    color: isHovered ? '#DEB887' : '#fff'
+                    color: isHovered ? '#a8d8a8' : '#fff' // Soft green accent to match users
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -83,8 +83,8 @@ export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: Rol
                         position: 'absolute',
                         top: '100%',
                         left: '0',
-                        backgroundColor: '#654321',
-                        border: '1px solid #8B4513',
+                        backgroundColor: '#8b6914', // Amber/golden background
+                        border: '1px solid #b8860b',
                         borderRadius: '4px',
                         padding: '8px',
                         zIndex: 1000,

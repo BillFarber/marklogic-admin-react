@@ -26,19 +26,31 @@ export function SecurityTab({
 }: SecurityTabProps) {
     return (
         <div>
-            <UsersSection
-                users={users}
-                userDetails={userDetails}
-                hoveredUser={hoveredUser}
-                setHoveredUser={setHoveredUser}
-            />
+            {/* Main sections side-by-side */}
+            <div style={{
+                display: 'flex',
+                gap: '20px',
+                marginBottom: '20px',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <UsersSection
+                        users={users}
+                        userDetails={userDetails}
+                        hoveredUser={hoveredUser}
+                        setHoveredUser={setHoveredUser}
+                    />
+                </div>
 
-            <RolesSection
-                roles={roles}
-                roleDetails={roleDetails}
-                hoveredRole={hoveredRole}
-                setHoveredRole={setHoveredRole}
-            />
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <RolesSection
+                        roles={roles}
+                        roleDetails={roleDetails}
+                        hoveredRole={hoveredRole}
+                        setHoveredRole={setHoveredRole}
+                    />
+                </div>
+            </div>
 
             {/* Raw JSON data sections for Users */}
             <RawJsonSection

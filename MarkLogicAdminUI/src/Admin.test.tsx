@@ -676,7 +676,7 @@ describe('Admin', () => {
             // Should show forests section but with empty list
             const forestsLists = screen.getAllByRole('list');
             const forestsList = forestsLists.find(list =>
-                list.style.background === 'rgb(42, 77, 58)' // Green background for forests
+                list.style.background === 'rgb(114, 47, 55)' // Burgundy background for forests
             );
             expect(forestsList).toBeInTheDocument();
             expect(forestsList?.children).toHaveLength(0);
@@ -715,7 +715,7 @@ describe('Admin', () => {
 
             const forestsLists = screen.getAllByRole('list');
             const forestsList = forestsLists.find(list =>
-                list.style.background === 'rgb(42, 77, 58)' // Green background for forests
+                list.style.background === 'rgb(114, 47, 55)' // Burgundy background for forests
             );
             expect(forestsList?.children).toHaveLength(2);
         });
@@ -899,7 +899,7 @@ describe('Admin', () => {
 
             const serversLists = screen.getAllByRole('list');
             const serversList = serversLists.find(list =>
-                list.style.background === 'rgb(45, 74, 107)' // Blue background for servers
+                list.style.background === 'rgb(52, 73, 94)' // Blue-grey background for servers
             );
             expect(serversList?.children).toHaveLength(2);
         });
@@ -1704,7 +1704,7 @@ describe('Admin', () => {
             });
         });
 
-        it.skip('shows retired forests count in tooltip when greater than 0', async () => {
+        it('shows retired forests count in tooltip when greater than 0', async () => {
             const mockDatabasesResponse = {
                 'database-default-list': {
                     'list-items': {
@@ -1726,7 +1726,10 @@ describe('Admin', () => {
                 mockDatabasesResponse,
                 { 'forest-default-list': { 'list-items': { 'list-item': [] } } },
                 { 'server-default-list': { 'list-items': { 'list-item': [] } } },
-                { 'doc-123': mockDatabaseDetails }
+                null, // groups
+                null, // users
+                null, // roles
+                { 'doc-123': mockDatabaseDetails } // database details
             );
 
             render(<Admin />);

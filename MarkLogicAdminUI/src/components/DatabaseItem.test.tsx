@@ -72,7 +72,7 @@ describe('DatabaseItem', () => {
         render(<DatabaseItem {...propsWithHover} />);
 
         const listItem = screen.getByText('Documents').closest('li');
-        expect(listItem).toHaveStyle({ backgroundColor: '#5a3d7b' });
+        expect(listItem).toHaveStyle({ backgroundColor: '#a0303e' });
     });
 
     it('does not apply hover styles when database is not hovered', () => {

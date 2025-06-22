@@ -68,7 +68,7 @@ describe('UserItem', () => {
         // Use getAllByText and get the first element which should be the main button
         const userElements = screen.getAllByText('test-user');
         const listItem = userElements[0].closest('li');
-        expect(listItem).toHaveStyle({ backgroundColor: '#e66a10' });
+        expect(listItem).toHaveStyle({ backgroundColor: '#4a7c59' });
     });
 
     it('does not apply hover styles when user is not hovered', () => {

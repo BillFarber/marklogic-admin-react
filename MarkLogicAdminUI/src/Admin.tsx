@@ -336,7 +336,7 @@ function Admin() {
                         style={{
                             padding: '12px 24px',
                             border: 'none',
-                            backgroundColor: activeTab === 'data' ? '#4a2d6b' : '#f5f5f5',
+                            backgroundColor: activeTab === 'data' ? '#722f37' : '#f5f5f5', // Burgundy
                             color: activeTab === 'data' ? '#fff' : '#333',
                             cursor: 'pointer',
                             borderBottom: activeTab === 'data' ? 'none' : '2px solid #ddd',
@@ -352,7 +352,7 @@ function Admin() {
                         style={{
                             padding: '12px 24px',
                             border: 'none',
-                            backgroundColor: activeTab === 'infrastructure' ? '#2d6b4a' : '#f5f5f5',
+                            backgroundColor: activeTab === 'infrastructure' ? '#2c3e50' : '#f5f5f5', // Blue-grey to complement burgundy
                             color: activeTab === 'infrastructure' ? '#fff' : '#333',
                             cursor: 'pointer',
                             borderBottom: activeTab === 'infrastructure' ? 'none' : '2px solid #ddd',
@@ -368,7 +368,7 @@ function Admin() {
                         style={{
                             padding: '12px 24px',
                             border: 'none',
-                            backgroundColor: activeTab === 'users' ? '#b04500' : '#f5f5f5',
+                            backgroundColor: activeTab === 'users' ? '#2d5016' : '#f5f5f5', // Deep forest green
                             color: activeTab === 'users' ? '#fff' : '#333',
                             cursor: 'pointer',
                             borderBottom: activeTab === 'users' ? 'none' : '2px solid #ddd',

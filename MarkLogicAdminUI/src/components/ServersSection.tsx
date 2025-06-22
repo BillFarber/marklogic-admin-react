@@ -19,7 +19,7 @@ export function ServersSection({ servers, serverDetails, hoveredServer, setHover
         <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
             <h2>Servers</h2>
             <ul style={{
-                background: '#2d4a6b',
+                background: '#34495e', // Rich blue-grey
                 color: '#fff',
                 padding: 16,
                 borderRadius: 8,

@@ -19,7 +19,7 @@ export function UsersSection({ users, userDetails, hoveredUser, setHoveredUser }
         <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
             <h2>Users</h2>
             <ul style={{
-                background: '#d45a00',
+                background: '#355e3b', // Rich forest green
                 color: '#fff',
                 padding: 16,
                 borderRadius: 8,

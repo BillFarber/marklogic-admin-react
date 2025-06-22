@@ -57,14 +57,14 @@ export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredFor
                 position: 'relative',
                 padding: '8px',
                 borderRadius: '4px',
-                backgroundColor: isHovered ? '#3a5d4a' : 'transparent',
+                backgroundColor: isHovered ? '#a0303e' : 'transparent', // Lighter burgundy to match databases
                 transition: 'background-color 0.2s ease'
             }}
         >
             <strong
                 style={{
                     cursor: 'pointer',
-                    color: isHovered ? '#81C784' : '#fff'
+                    color: isHovered ? '#f8bbd9' : '#fff' // Soft burgundy-pink accent to match databases
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -82,8 +82,8 @@ export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredFor
                         position: 'absolute',
                         top: '100%',
                         left: '0',
-                        backgroundColor: '#1a2f2a',
-                        border: '1px solid #4a6a5a',
+                        backgroundColor: '#8b6914', // Amber/golden background
+                        border: '1px solid #b8860b',
                         borderRadius: '4px',
                         padding: '8px',
                         zIndex: 1000,
@@ -106,7 +106,7 @@ export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredFor
                         const properties = details['forest-properties'] || details;
                         return (
                             <>
-                                <hr style={{ margin: '8px 0', borderColor: '#4a6a5a' }} />
+                                <hr style={{ margin: '8px 0', borderColor: '#b8860b' }} />
                                 <div><strong>Host:</strong> {properties.host || 'N/A'}</div>
                                 <div><strong>Enabled:</strong> {properties.enabled ? 'Yes' : 'No'}</div>
                                 <div><strong>Data Directory:</strong> {properties['data-directory'] || 'N/A'}</div>

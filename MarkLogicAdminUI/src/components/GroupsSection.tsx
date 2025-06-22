@@ -19,7 +19,7 @@ export function GroupsSection({ groups, groupDetails, hoveredGroup, setHoveredGr
         <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
             <h2>Groups</h2>
             <ul style={{
-                background: '#4a2d6b',
+                background: '#2c3e50', // Deep blue-grey to match tab
                 color: '#fff',
                 padding: 16,
                 borderRadius: 8,

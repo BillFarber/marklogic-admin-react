@@ -57,14 +57,14 @@ export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: Use
                 position: 'relative',
                 padding: '8px',
                 borderRadius: '4px',
-                backgroundColor: isHovered ? '#e66a10' : 'transparent',
+                backgroundColor: isHovered ? '#4a7c59' : 'transparent', // Lighter forest green on hover
                 transition: 'background-color 0.2s ease'
             }}
         >
             <strong
                 style={{
                     cursor: 'pointer',
-                    color: isHovered ? '#FFB74D' : '#fff'
+                    color: isHovered ? '#a8d8a8' : '#fff' // Soft green accent on hover
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -83,8 +83,8 @@ export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: Use
                         position: 'absolute',
                         top: '100%',
                         left: '0',
-                        backgroundColor: '#b04500',
-                        border: '1px solid #d45a00',
+                        backgroundColor: '#8b6914', // Amber/golden background
+                        border: '1px solid #b8860b',
                         borderRadius: '4px',
                         padding: '8px',
                         zIndex: 1000,

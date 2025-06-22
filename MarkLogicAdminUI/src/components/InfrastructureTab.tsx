@@ -26,19 +26,31 @@ export function InfrastructureTab({
 }: InfrastructureTabProps) {
     return (
         <div>
-            <ServersSection
-                servers={servers}
-                serverDetails={serverDetails}
-                hoveredServer={hoveredServer}
-                setHoveredServer={setHoveredServer}
-            />
+            {/* Main sections side-by-side */}
+            <div style={{
+                display: 'flex',
+                gap: '20px',
+                marginBottom: '20px',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <ServersSection
+                        servers={servers}
+                        serverDetails={serverDetails}
+                        hoveredServer={hoveredServer}
+                        setHoveredServer={setHoveredServer}
+                    />
+                </div>
 
-            <GroupsSection
-                groups={groups}
-                groupDetails={groupDetails}
-                hoveredGroup={hoveredGroup}
-                setHoveredGroup={setHoveredGroup}
-            />
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <GroupsSection
+                        groups={groups}
+                        groupDetails={groupDetails}
+                        hoveredGroup={hoveredGroup}
+                        setHoveredGroup={setHoveredGroup}
+                    />
+                </div>
+            </div>
 
             {/* Raw JSON data sections for Infrastructure */}
             <RawJsonSection

@@ -26,19 +26,31 @@ export function DataTab({
 }: DataTabProps) {
     return (
         <div>
-            <DatabasesSection
-                databases={databases}
-                databaseDetails={databaseDetails}
-                hoveredDatabase={hoveredDatabase}
-                setHoveredDatabase={setHoveredDatabase}
-            />
+            {/* Main sections side-by-side */}
+            <div style={{
+                display: 'flex',
+                gap: '20px',
+                marginBottom: '20px',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <DatabasesSection
+                        databases={databases}
+                        databaseDetails={databaseDetails}
+                        hoveredDatabase={hoveredDatabase}
+                        setHoveredDatabase={setHoveredDatabase}
+                    />
+                </div>
 
-            <ForestsSection
-                forests={forests}
-                forestDetails={forestDetails}
-                hoveredForest={hoveredForest}
-                setHoveredForest={setHoveredForest}
-            />
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <ForestsSection
+                        forests={forests}
+                        forestDetails={forestDetails}
+                        hoveredForest={hoveredForest}
+                        setHoveredForest={setHoveredForest}
+                    />
+                </div>
+            </div>
 
             {/* Raw JSON data sections for Data */}
             <RawJsonSection

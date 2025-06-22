@@ -19,7 +19,7 @@ export function RolesSection({ roles, roleDetails, hoveredRole, setHoveredRole }
         <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
             <h2>Roles</h2>
             <ul style={{
-                background: '#8B4513',
+                background: '#2d5016', // Deep forest green to match tab
                 color: '#fff',
                 padding: 16,
                 borderRadius: 8,

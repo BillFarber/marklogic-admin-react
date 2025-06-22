@@ -57,14 +57,14 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
                 position: 'relative',
                 padding: '8px',
                 borderRadius: '4px',
-                backgroundColor: isHovered ? '#3d5a7b' : 'transparent',
+                backgroundColor: isHovered ? '#5a6c7d' : 'transparent', // Lighter blue-grey on hover
                 transition: 'background-color 0.2s ease'
             }}
         >
             <strong
                 style={{
                     cursor: 'pointer',
-                    color: isHovered ? '#FF7043' : '#fff'
+                    color: isHovered ? '#bdc3c7' : '#fff' // Soft blue-grey accent on hover
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -85,8 +85,8 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
                         top: '100%',
                         left: '0',
                         right: '0',
-                        background: '#5a3d3a',
-                        border: '1px solid #777',
+                        background: '#8b6914', // Amber/golden background
+                        border: '1px solid #b8860b',
                         borderRadius: '8px',
                         padding: '12px',
                         marginTop: '4px',

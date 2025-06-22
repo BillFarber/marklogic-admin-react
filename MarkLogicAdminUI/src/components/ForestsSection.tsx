@@ -19,7 +19,7 @@ export function ForestsSection({ forests, forestDetails, hoveredForest, setHover
         <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
             <h2>Forests</h2>
             <ul style={{
-                background: '#2a4d3a',
+                background: '#722f37', // Deep burgundy to match tab
                 color: '#fff',
                 padding: 16,
                 borderRadius: 8,

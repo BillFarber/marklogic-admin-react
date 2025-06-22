@@ -58,14 +58,14 @@ export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHo
                 position: 'relative',
                 padding: '8px',
                 borderRadius: '4px',
-                backgroundColor: isHovered ? '#5a3d7b' : 'transparent',
+                backgroundColor: isHovered ? '#a0303e' : 'transparent', // Lighter burgundy on hover
                 transition: 'background-color 0.2s ease'
             }}
         >
             <strong
                 style={{
                     cursor: 'pointer',
-                    color: isHovered ? '#B39DDB' : '#fff'
+                    color: isHovered ? '#f8bbd9' : '#fff' // Soft burgundy-pink accent on hover
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -93,8 +93,8 @@ export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHo
                         top: '100%',
                         left: '0',
                         right: '0',
-                        background: '#444',
-                        border: '1px solid #666',
+                        background: '#8b6914', // Amber/golden background
+                        border: '1px solid #b8860b',
                         borderRadius: '8px',
                         padding: '12px',
                         marginTop: '4px',

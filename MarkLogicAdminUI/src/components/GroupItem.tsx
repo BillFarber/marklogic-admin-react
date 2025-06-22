@@ -57,14 +57,14 @@ export function GroupItem({ group, groupDetails, hoveredGroup, setHoveredGroup }
                 position: 'relative',
                 padding: '8px',
                 borderRadius: '4px',
-                backgroundColor: isHovered ? '#5a3d7b' : 'transparent',
+                backgroundColor: isHovered ? '#5a6c7d' : 'transparent', // Lighter blue-grey to match servers
                 transition: 'background-color 0.2s ease'
             }}
         >
             <strong
                 style={{
                     cursor: 'pointer',
-                    color: isHovered ? '#FF7043' : '#fff'
+                    color: isHovered ? '#bdc3c7' : '#fff' // Soft blue-grey accent to match servers
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -83,7 +83,7 @@ export function GroupItem({ group, groupDetails, hoveredGroup, setHoveredGroup }
                         top: '0',
                         left: '100%',
                         marginLeft: '10px',
-                        backgroundColor: '#333',
+                        backgroundColor: '#8b6914', // Amber/golden background
                         color: '#fff',
                         padding: '16px',
                         borderRadius: '8px',

@@ -19,7 +19,7 @@ export function DatabasesSection({ databases, databaseDetails, hoveredDatabase, 
         <section style={{ margin: '2rem auto', maxWidth: 800, textAlign: 'left' }}>
             <h2>Databases</h2>
             <ul style={{
-                background: '#4a2d6b',
+                background: '#8b2635', // Rich burgundy
                 color: '#fff',
                 padding: 16,
                 borderRadius: 8,

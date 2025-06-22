@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LogsTab } from './LogsTab';
 import '@testing-library/jest-dom';
@@ -39,7 +39,7 @@ describe('LogsTab Dropdown Tests', () => {
         // Check that the dropdown contains the fetched files
         const dropdown = screen.getByRole('combobox');
         expect(dropdown).toBeInTheDocument();
-        
+
         // Check that all files are in the dropdown
         expect(screen.getByRole('option', { name: 'ErrorLog.txt' })).toBeInTheDocument();
         expect(screen.getByRole('option', { name: 'AuditLog.txt' })).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('LogsTab Dropdown Tests', () => {
 
         // Verify the API calls
         expect(mockFetch).toHaveBeenCalledTimes(2);
-        expect(mockFetch).toHaveBeenNthCalledWith(1, 
+        expect(mockFetch).toHaveBeenNthCalledWith(1,
             'http://localhost:8080/manage/v2/logs?format=json',
             expect.objectContaining({
                 method: 'GET',
@@ -164,7 +164,7 @@ describe('LogsTab Dropdown Tests', () => {
         // Check dropdown accessibility
         const dropdown = screen.getByRole('combobox');
         expect(dropdown).toHaveAttribute('id', 'logfile-select');
-        
+
         const label = screen.getByLabelText('Log File:');
         expect(label).toBeInTheDocument();
         expect(label).toBe(dropdown);

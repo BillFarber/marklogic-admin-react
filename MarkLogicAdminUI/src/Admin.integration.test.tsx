@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import Admin from './Admin';
 import '@testing-library/jest-dom';
 
@@ -9,7 +9,7 @@ describe('Admin - Real Integration Tests', () => {
     const checkProxyHealth = async (): Promise<boolean> => {
         try {
             // Use the databases endpoint instead of actuator/health since that's what we actually need
-            const response = await fetch('http://localhost:8080/manage/v2/databases', {
+            await fetch('http://localhost:8080/manage/v2/databases', {
                 method: 'GET',
                 headers: { 'Accept': 'application/json' }
             });
@@ -34,7 +34,7 @@ describe('Admin - Real Integration Tests', () => {
             } else {
                 return { success: false, status: response.status };
             }
-        } catch (error) {
+        } catch {
             return { success: false };
         }
     };
@@ -337,7 +337,6 @@ describe('Admin - Real Integration Tests', () => {
 
             // Check for any content (success or error) for both sections
             const hasAnyDatabaseContent = screen.queryAllByText(/Databases|App-Services|Documents|Security|Modules|Error/);
-            const hasAnyForestsContent = screen.queryAllByText(/Forests|forest-default-list/);
 
             // We should have database content and either forests content or at least the databases loaded
             expect(hasAnyDatabaseContent.length).toBeGreaterThan(0);
@@ -361,7 +360,7 @@ describe('Admin - Real Integration Tests', () => {
                 } else {
                     return { success: false, status: response.status };
                 }
-            } catch (error) {
+            } catch {
                 return { success: false };
             }
         };
@@ -380,7 +379,7 @@ describe('Admin - Real Integration Tests', () => {
                 } else {
                     return { success: false, status: response.status };
                 }
-            } catch (error) {
+            } catch {
                 return { success: false };
             }
         };
@@ -523,7 +522,6 @@ describe('Admin - Real Integration Tests', () => {
 
             // Check for any content (success or error) for both sections
             const hasAnyUsersContent = screen.queryAllByText(/Users|user-default-list|admin|Error/);
-            const hasAnyRolesContent = screen.queryAllByText(/Roles|role-default-list|admin|manage-user|Error/);
 
             // We should have users content and either roles content or at least the users loaded
             expect(hasAnyUsersContent.length).toBeGreaterThan(0);
@@ -553,8 +551,6 @@ describe('Admin - Real Integration Tests', () => {
             // Look for interactive elements or details sections
             const hasUsersSection = screen.queryByText('Users');
             const hasRolesSection = screen.queryByText('Roles');
-            const hasUserDetailsJson = screen.queryByText('View Raw User Details JSON');
-            const hasRoleDetailsJson = screen.queryByText('View Raw Role Details JSON');
 
             // Should have at least the basic sections
             const hasBasicSecuritySections = hasUsersSection || hasRolesSection;

@@ -4,9 +4,10 @@ interface LogsSectionProps {
     logs: any;
     error: string | null;
     loading: boolean;
+    selectedLogFile?: string;
 }
 
-export function LogsSection({ logs, error, loading }: LogsSectionProps) {
+export function LogsSection({ logs, error, loading, selectedLogFile = 'ErrorLog.txt' }: LogsSectionProps) {
     if (loading) {
         return (
             <div style={{
@@ -83,7 +84,11 @@ export function LogsSection({ logs, error, loading }: LogsSectionProps) {
                 borderBottom: '2px solid #8B4513',
                 paddingBottom: '8px'
             }}>
-                📋 Error Logs (ErrorLog.txt)
+                📋 {selectedLogFile.includes('Error') ? 'Error Logs' :
+                    selectedLogFile.includes('Access') ? 'Access Logs' :
+                        selectedLogFile.includes('Request') ? 'Request Logs' :
+                            selectedLogFile.includes('Audit') ? 'Audit Logs' :
+                                selectedLogFile.includes('Crash') ? 'Crash Logs' : 'Logs'} ({selectedLogFile})
             </h3>
 
             <div style={{

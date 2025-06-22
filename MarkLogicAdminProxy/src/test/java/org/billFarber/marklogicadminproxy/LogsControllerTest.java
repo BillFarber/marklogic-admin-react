@@ -129,10 +129,11 @@ class LogsControllerTest {
         // Act
         ResponseEntity<String> result = logsController.getLogs(null, null, null, null, null, null);
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-        assertTrue(result.getBody().contains("filename parameter is required"));
+        // Assert - With optional filename, this should make a call to MarkLogic without
+        // filename
+        // The actual response depends on what MarkLogic returns, but it shouldn't be a
+        // 400 error
+        assertNotEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
     @Test
@@ -140,10 +141,11 @@ class LogsControllerTest {
         // Act
         ResponseEntity<String> result = logsController.getLogs(null, "  ", null, null, null, null);
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-        assertTrue(result.getBody().contains("filename parameter is required"));
+        // Assert - With optional filename, this should make a call to MarkLogic without
+        // filename
+        // The actual response depends on what MarkLogic returns, but it shouldn't be a
+        // 400 error
+        assertNotEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
     @Test

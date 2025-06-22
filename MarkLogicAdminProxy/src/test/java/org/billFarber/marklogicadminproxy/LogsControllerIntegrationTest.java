@@ -107,10 +107,12 @@ class LogsControllerIntegrationTest {
                 "http://localhost:" + port + "/manage/v2/logs?format=json",
                 String.class);
 
-        // Assert
-        // Spring Boot returns a 404 when a required parameter is missing instead of 400
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
-                "Missing filename should return 404 from Spring Boot. Got: " + response.getStatusCode());
+        // Assert - With optional filename, this should make a call to MarkLogic without
+        // filename
+        // The actual response depends on what MarkLogic returns, but it shouldn't be a
+        // 404 error
+        assertNotEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+                "Missing filename should no longer return 404. Got: " + response.getStatusCode());
 
         assertNotNull(response.getBody());
     }

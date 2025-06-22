@@ -49,7 +49,7 @@ public class LogsController {
     @GetMapping("/manage/v2/logs")
     public ResponseEntity<String> getLogs(
             @RequestParam(value = "format", required = false) String format,
-            @RequestParam(value = "filename", required = true) String filename,
+            @RequestParam(value = "filename", required = false) String filename,
             @RequestParam(value = "host", required = false) String host,
             @RequestParam(value = "start", required = false) String start,
             @RequestParam(value = "end", required = false) String end,
@@ -63,14 +63,6 @@ public class LogsController {
                     .body("{\"error\": \"Invalid format parameter. Must be one of: json, xml, html, text\"}");
         }
 
-        // Validate that filename is provided (Spring validation should handle this, but
-        // double-check)
-        if (filename == null || filename.trim().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body("{\"error\": \"filename parameter is required\"}");
-        }
-
         try {
             // Get the underlying OkHttpClient from the MarkLogic DatabaseClient
             OkHttpClient okHttpClient = (OkHttpClient) databaseClient.getClientImplementation();
@@ -78,8 +70,10 @@ public class LogsController {
             HttpUrl.Builder urlBuilder = HttpUrl.parse(marklogicSchema + "://" + marklogicHost + ":8002/manage/v2/logs")
                     .newBuilder();
 
-            // Add required filename parameter
-            urlBuilder.addQueryParameter("filename", filename);
+            // Add filename parameter only if provided
+            if (filename != null && !filename.trim().isEmpty()) {
+                urlBuilder.addQueryParameter("filename", filename);
+            }
 
             // Add optional parameters if provided
             if (format != null) {

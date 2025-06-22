@@ -721,6 +721,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Infrastructure tab to see servers
+            const infrastructureTabButton = screen.getByRole('button', { name: /Infrastructure \(Servers\)/ });
+            fireEvent.click(infrastructureTabButton);
+
             // Wait for the servers API call to complete and component to update
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Servers' })).toBeInTheDocument();
@@ -761,6 +765,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Infrastructure tab to see servers
+            const infrastructureTabButton = screen.getByRole('button', { name: /Infrastructure \(Servers\)/ });
+            fireEvent.click(infrastructureTabButton);
 
             // Wait for component to load
             await waitFor(() => {
@@ -815,6 +823,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Infrastructure tab to see servers
+            const infrastructureTabButton = screen.getByRole('button', { name: /Infrastructure \(Servers\)/ });
+            fireEvent.click(infrastructureTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Servers' })).toBeInTheDocument();
             });
@@ -844,6 +856,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Infrastructure tab to see servers
+            const infrastructureTabButton = screen.getByRole('button', { name: /Infrastructure \(Servers\)/ });
+            fireEvent.click(infrastructureTabButton);
+
             await waitFor(() => {
                 // Should show the JSON but not the servers list
                 expect(screen.getByText(/"some-other-server-structure"/)).toBeInTheDocument();
@@ -872,6 +888,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Infrastructure tab to see servers
+            const infrastructureTabButton = screen.getByRole('button', { name: /Infrastructure \(Servers\)/ });
+            fireEvent.click(infrastructureTabButton);
 
             await waitFor(() => {
                 expect(screen.getByText('View Raw Servers JSON')).toBeInTheDocument();

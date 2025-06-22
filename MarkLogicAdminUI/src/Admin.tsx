@@ -1,5 +1,5 @@
 import React from 'react';
-import { SecurityTab, InfrastructureTab } from './components';
+import { SecurityTab, DataTab, InfrastructureTab } from './components';
 
 function Admin() {
     const [databases, setDatabases] = React.useState<any>(null);
@@ -19,7 +19,7 @@ function Admin() {
     const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
     const [hoveredUser, setHoveredUser] = React.useState<string | null>(null);
     const [hoveredRole, setHoveredRole] = React.useState<string | null>(null);
-    const [activeTab, setActiveTab] = React.useState<string>('infrastructure');
+    const [activeTab, setActiveTab] = React.useState<string>('data');
 
     React.useEffect(() => {
         document.title = 'MarkLogic Admin';
@@ -283,11 +283,27 @@ function Admin() {
                     justifyContent: 'center'
                 }}>
                     <button
+                        onClick={() => setActiveTab('data')}
+                        style={{
+                            padding: '12px 24px',
+                            border: 'none',
+                            backgroundColor: activeTab === 'data' ? '#4a2d6b' : '#f5f5f5',
+                            color: activeTab === 'data' ? '#fff' : '#333',
+                            cursor: 'pointer',
+                            borderBottom: activeTab === 'data' ? 'none' : '2px solid #ddd',
+                            fontWeight: activeTab === 'data' ? 'bold' : 'normal',
+                            transition: 'all 0.2s ease',
+                            marginRight: '4px'
+                        }}
+                    >
+                        Data (Databases & Forests)
+                    </button>
+                    <button
                         onClick={() => setActiveTab('infrastructure')}
                         style={{
                             padding: '12px 24px',
                             border: 'none',
-                            backgroundColor: activeTab === 'infrastructure' ? '#4a2d6b' : '#f5f5f5',
+                            backgroundColor: activeTab === 'infrastructure' ? '#2d6b4a' : '#f5f5f5',
                             color: activeTab === 'infrastructure' ? '#fff' : '#333',
                             cursor: 'pointer',
                             borderBottom: activeTab === 'infrastructure' ? 'none' : '2px solid #ddd',
@@ -296,7 +312,7 @@ function Admin() {
                             marginRight: '4px'
                         }}
                     >
-                        Infrastructure (Databases, Forests, Servers)
+                        Infrastructure (Servers)
                     </button>
                     <button
                         onClick={() => setActiveTab('users')}
@@ -317,18 +333,23 @@ function Admin() {
 
                 {/* Tab Content */}
                 <div style={{ textAlign: 'left' }}>
-                    {activeTab === 'infrastructure' && (
-                        <InfrastructureTab
+                    {activeTab === 'data' && (
+                        <DataTab
                             databases={databases}
                             databaseDetails={databaseDetails}
                             forests={forests}
                             forestDetails={forestDetails}
-                            servers={servers}
-                            serverDetails={serverDetails}
                             hoveredDatabase={hoveredDatabase}
                             setHoveredDatabase={setHoveredDatabase}
                             hoveredForest={hoveredForest}
                             setHoveredForest={setHoveredForest}
+                        />
+                    )}
+
+                    {activeTab === 'infrastructure' && (
+                        <InfrastructureTab
+                            servers={servers}
+                            serverDetails={serverDetails}
                             hoveredServer={hoveredServer}
                             setHoveredServer={setHoveredServer}
                         />

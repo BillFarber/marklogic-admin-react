@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { MarkLogicListItem } from '../types/marklogic';
 import { DatabaseItem } from './DatabaseItem';
 import '@testing-library/jest-dom';
 
@@ -97,7 +98,7 @@ describe('DatabaseItem', () => {
         const databaseWithoutNameref = {
             uriref: '/manage/v2/databases/no-name',
             idref: 'db456'
-        };
+        } as MarkLogicListItem; // Type assertion for testing edge case
 
         const propsWithoutNameref = {
             ...defaultProps,
@@ -114,7 +115,7 @@ describe('DatabaseItem', () => {
         const databaseWithoutIdref = {
             nameref: 'Test-Database',
             uriref: '/manage/v2/databases/Test-Database'
-        };
+        } as MarkLogicListItem; // Type assertion for testing edge case
 
         const propsWithoutIdref = {
             ...defaultProps,

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { InfrastructureTab } from './InfrastructureTab';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { InfrastructureTab } from './InfrastructureTab';
 import '@testing-library/jest-dom';
 
 describe('InfrastructureTab', () => {

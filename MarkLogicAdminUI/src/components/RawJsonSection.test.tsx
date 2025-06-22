@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { RawJsonSection } from './RawJsonSection';
 import { describe, it, expect } from 'vitest';
+import { RawJsonSection } from './RawJsonSection';
 import '@testing-library/jest-dom';
 
 describe('RawJsonSection', () => {

@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import NotFound from './NotFound';
-import App from './App';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect } from 'vitest';
+import NotFound from './NotFound';
+import App from './App';
 import '@testing-library/jest-dom';
 
 describe('NotFound', () => {

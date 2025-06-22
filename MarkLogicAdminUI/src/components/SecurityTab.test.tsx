@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { SecurityTab } from './SecurityTab';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { SecurityTab } from './SecurityTab';
 import '@testing-library/jest-dom';
 
 describe('SecurityTab', () => {

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UserItem } from './UserItem';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { UserItem } from './UserItem';
 import '@testing-library/jest-dom';
 
 describe('UserItem', () => {

@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import { LogsTab } from './LogsTab';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { LogsTab } from './LogsTab';
 import '@testing-library/jest-dom';
 
 // Mock fetch globally

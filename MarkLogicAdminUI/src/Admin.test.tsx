@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import Admin from './Admin';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import Admin from './Admin';
 import '@testing-library/jest-dom';
 
 // Mock fetch globally

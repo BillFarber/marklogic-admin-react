@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { DatabaseItem } from './DatabaseItem';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { DatabaseItem } from './DatabaseItem';
 import '@testing-library/jest-dom';
 
 describe('DatabaseItem', () => {

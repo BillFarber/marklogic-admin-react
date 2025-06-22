@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import Admin from './Admin';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import Admin from './Admin';
 import '@testing-library/jest-dom';
 
 // Real Integration Tests - These make actual HTTP requests to the Spring Boot proxy

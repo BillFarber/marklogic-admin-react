@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import App from './App';
 import '@testing-library/jest-dom';
 
 // Mock fetch globally

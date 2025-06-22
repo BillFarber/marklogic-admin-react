@@ -12,6 +12,7 @@ interface InfrastructureTabProps {
     groupDetails: Record<string, any>;
     hoveredGroup: string | null;
     setHoveredGroup: (group: string | null) => void;
+    onDatabaseClick?: (databaseName: string) => void;
 }
 
 export function InfrastructureTab({
@@ -22,7 +23,8 @@ export function InfrastructureTab({
     groups,
     groupDetails,
     hoveredGroup,
-    setHoveredGroup
+    setHoveredGroup,
+    onDatabaseClick
 }: InfrastructureTabProps) {
     return (
         <div>
@@ -39,6 +41,7 @@ export function InfrastructureTab({
                         serverDetails={serverDetails}
                         hoveredServer={hoveredServer}
                         setHoveredServer={setHoveredServer}
+                        onDatabaseClick={onDatabaseClick}
                     />
                 </div>
 

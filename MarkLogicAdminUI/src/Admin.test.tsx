@@ -374,6 +374,10 @@ describe('Admin', () => {
 
         render(<Admin />);
 
+        // Click on Data tab to see databases
+        const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+        fireEvent.click(dataTabButton);
+
         // Wait for the API call to complete and component to update
         await waitFor(() => {
             expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -439,6 +443,10 @@ describe('Admin', () => {
 
         render(<Admin />);
 
+        // Click on Data tab to see databases
+        const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+        fireEvent.click(dataTabButton);
+
         await waitFor(() => {
             expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
         });
@@ -471,6 +479,10 @@ describe('Admin', () => {
 
         render(<Admin />);
 
+        // Click on Data tab to see databases
+        const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+        fireEvent.click(dataTabButton);
+
         await waitFor(() => {
             expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
         });
@@ -495,6 +507,10 @@ describe('Admin', () => {
         );
 
         render(<Admin />);
+
+        // Click on Data tab to see databases/forests
+        const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+        fireEvent.click(dataTabButton);
 
         await waitFor(() => {
             // Should show the databases details section
@@ -551,6 +567,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             // Wait for the forests API call to complete and component to update
             await waitFor(() => {
@@ -669,6 +689,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
             });
@@ -705,6 +729,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
             });
@@ -733,6 +761,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 // Should show the JSON but not the forests list
@@ -1067,6 +1099,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases and forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             // Wait for both API calls to complete
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -1120,6 +1156,10 @@ describe('Admin', () => {
                 });
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -1248,6 +1288,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             // Wait for all data to load
             await waitFor(() => {
@@ -1389,6 +1433,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
             });
@@ -1443,6 +1491,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
             });
@@ -1495,6 +1547,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByText(/Status: Enabled/)).toBeInTheDocument();
                 expect(screen.getByText(/Forests: 2/)).toBeInTheDocument();
@@ -1532,6 +1588,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByText(/Status: Disabled/)).toBeInTheDocument();
                 expect(screen.getByText(/Forests: 0/)).toBeInTheDocument();
@@ -1561,8 +1621,12 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
-                expect(screen.getByText('Loading details...')).toBeInTheDocument();
+                expect(screen.getByText('Loading database details...')).toBeInTheDocument();
             });
         });
 
@@ -1590,6 +1654,10 @@ describe('Admin', () => {
             const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -1641,6 +1709,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -1734,6 +1806,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
             });
@@ -1778,6 +1854,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -1827,6 +1907,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
             });
@@ -1874,8 +1958,12 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             await waitFor(() => {
-                expect(screen.getByText('Loading details...')).toBeInTheDocument();
+                expect(screen.getByText('Loading database details...')).toBeInTheDocument();
             });
 
             const databaseName = screen.getByText('Documents');
@@ -1917,6 +2005,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -1965,6 +2057,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -2028,6 +2124,10 @@ describe('Admin', () => {
 
             render(<Admin />);
 
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
+
             // Wait for database details to load
             await waitFor(() => {
                 expect(screen.getAllByText(/Status: Enabled/).length).toBeGreaterThanOrEqual(1);
@@ -2063,6 +2163,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see databases
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
@@ -2115,6 +2219,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
@@ -2173,6 +2281,10 @@ describe('Admin', () => {
             );
 
             render(<Admin />);
+
+            // Click on Data tab to see forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();
@@ -2237,6 +2349,10 @@ describe('Admin', () => {
             const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
             render(<Admin />);
+
+            // Click on Data tab to see forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             await waitFor(() => {
                 expect(screen.getByRole('heading', { name: 'Forests' })).toBeInTheDocument();

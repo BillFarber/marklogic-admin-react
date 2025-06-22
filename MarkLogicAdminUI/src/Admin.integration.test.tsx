@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Admin from './Admin';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import '@testing-library/jest-dom';
@@ -230,6 +230,10 @@ describe('Admin - Real Integration Tests', () => {
             expect(proxyRunning).toBe(true);
 
             render(<Admin />);
+
+            // Click on Data tab to see databases/forests
+            const dataTabButton = screen.getByRole('button', { name: /Data \(Databases & Forests\)/ });
+            fireEvent.click(dataTabButton);
 
             // Wait for all loading states to finish
             await waitFor(() => {

@@ -5,9 +5,10 @@ interface ServerItemProps {
     serverDetails: Record<string, any>;
     hoveredServer: string | null;
     setHoveredServer: (server: string | null) => void;
+    onDatabaseClick?: (databaseName: string) => void;
 }
 
-export function ServerItem({ server, serverDetails, hoveredServer, setHoveredServer }: ServerItemProps) {
+export function ServerItem({ server, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServerItemProps) {
     const isHovered = hoveredServer === server.idref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
@@ -104,8 +105,46 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
                     <div><strong>Name:</strong> {server.nameref}</div>
                     <div><strong>Type:</strong> {server.kindref || 'N/A'}</div>
                     <div><strong>Group:</strong> {server.groupnameref || 'Default'}</div>
-                    {server['content-db'] && <div><strong>Content Database:</strong> {server['content-db']}</div>}
-                    {server['modules-db'] && <div><strong>Modules Database:</strong> {server['modules-db']}</div>}
+                    {server['content-db'] && (
+                        <div>
+                            <strong>Content Database:</strong>{' '}
+                            <span
+                                style={{
+                                    color: '#3498db',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onDatabaseClick) {
+                                        onDatabaseClick(server['content-db']);
+                                    }
+                                }}
+                            >
+                                {server['content-db']}
+                            </span>
+                        </div>
+                    )}
+                    {server['modules-db'] && (
+                        <div>
+                            <strong>Modules Database:</strong>{' '}
+                            <span
+                                style={{
+                                    color: '#3498db',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onDatabaseClick) {
+                                        onDatabaseClick(server['modules-db']);
+                                    }
+                                }}
+                            >
+                                {server['modules-db']}
+                            </span>
+                        </div>
+                    )}
 
                     {/* Server details from properties endpoint */}
                     {serverDetails[server.nameref] && (() => {
@@ -117,8 +156,46 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
                                 {details.port && <div><strong>Port:</strong> {details.port}</div>}
                                 {details['server-type'] && <div><strong>Server Type:</strong> {details['server-type']}</div>}
                                 {details.authentication && <div><strong>Authentication:</strong> {details.authentication}</div>}
-                                {details['content-database'] && <div><strong>Content Database:</strong> {details['content-database']}</div>}
-                                {details['modules-database'] && <div><strong>Modules Database:</strong> {details['modules-database']}</div>}
+                                {details['content-database'] && (
+                                    <div>
+                                        <strong>Content Database:</strong>{' '}
+                                        <span
+                                            style={{
+                                                color: '#3498db',
+                                                textDecoration: 'underline',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (onDatabaseClick) {
+                                                    onDatabaseClick(details['content-database']);
+                                                }
+                                            }}
+                                        >
+                                            {details['content-database']}
+                                        </span>
+                                    </div>
+                                )}
+                                {details['modules-database'] && (
+                                    <div>
+                                        <strong>Modules Database:</strong>{' '}
+                                        <span
+                                            style={{
+                                                color: '#3498db',
+                                                textDecoration: 'underline',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (onDatabaseClick) {
+                                                    onDatabaseClick(details['modules-database']);
+                                                }
+                                            }}
+                                        >
+                                            {details['modules-database']}
+                                        </span>
+                                    </div>
+                                )}
                                 {details.root && <div><strong>Root:</strong> {details.root}</div>}
                                 {details.threads && <div><strong>Threads:</strong> {details.threads}</div>}
                                 {details['request-timeout'] && <div><strong>Request Timeout:</strong> {details['request-timeout']}s</div>}

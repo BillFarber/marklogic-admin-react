@@ -6,9 +6,10 @@ interface ServersSectionProps {
     serverDetails: Record<string, any>;
     hoveredServer: string | null;
     setHoveredServer: (server: string | null) => void;
+    onDatabaseClick?: (databaseName: string) => void;
 }
 
-export function ServersSection({ servers, serverDetails, hoveredServer, setHoveredServer }: ServersSectionProps) {
+export function ServersSection({ servers, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServersSectionProps) {
     if (!servers || !Array.isArray(servers['server-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -33,6 +34,7 @@ export function ServersSection({ servers, serverDetails, hoveredServer, setHover
                         serverDetails={serverDetails}
                         hoveredServer={hoveredServer}
                         setHoveredServer={setHoveredServer}
+                        onDatabaseClick={onDatabaseClick}
                     />
                 ))}
             </ul>

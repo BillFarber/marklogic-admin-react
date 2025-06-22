@@ -7,7 +7,7 @@ interface ForestItemProps {
     setHoveredForest: (forest: string | null) => void;
 }
 
-export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredForest }: ForestItemProps) {
+export const ForestItem = React.memo(function ForestItem({ forest, forestDetails, hoveredForest, setHoveredForest }: ForestItemProps) {
     const isHovered = hoveredForest === forest.idref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
@@ -131,4 +131,4 @@ export function ForestItem({ forest, forestDetails, hoveredForest, setHoveredFor
             )}
         </li>
     );
-}
+});

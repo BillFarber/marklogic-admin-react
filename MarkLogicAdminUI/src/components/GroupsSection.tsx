@@ -8,7 +8,7 @@ interface GroupsSectionProps {
     setHoveredGroup: (group: string | null) => void;
 }
 
-export function GroupsSection({ groups, groupDetails, hoveredGroup, setHoveredGroup }: GroupsSectionProps) {
+export const GroupsSection = React.memo(function GroupsSection({ groups, groupDetails, hoveredGroup, setHoveredGroup }: GroupsSectionProps) {
     if (!groups || !Array.isArray(groups['group-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -38,4 +38,4 @@ export function GroupsSection({ groups, groupDetails, hoveredGroup, setHoveredGr
             </ul>
         </section>
     );
-}
+});

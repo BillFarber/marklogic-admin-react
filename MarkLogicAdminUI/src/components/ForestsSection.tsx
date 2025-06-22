@@ -8,7 +8,7 @@ interface ForestsSectionProps {
     setHoveredForest: (forest: string | null) => void;
 }
 
-export function ForestsSection({ forests, forestDetails, hoveredForest, setHoveredForest }: ForestsSectionProps) {
+export const ForestsSection = React.memo(function ForestsSection({ forests, forestDetails, hoveredForest, setHoveredForest }: ForestsSectionProps) {
     if (!forests || !Array.isArray(forests['forest-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -38,4 +38,4 @@ export function ForestsSection({ forests, forestDetails, hoveredForest, setHover
             </ul>
         </section>
     );
-}
+});

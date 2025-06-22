@@ -3,7 +3,7 @@ import React from 'react';
 import type { DatabasesSectionProps } from '../types/marklogic';
 import { DatabaseItem } from './DatabaseItem';
 
-export function DatabasesSection({ databases, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabasesSectionProps) {
+export const DatabasesSection = React.memo(function DatabasesSection({ databases, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabasesSectionProps) {
     if (!databases || !Array.isArray(databases['database-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -33,4 +33,4 @@ export function DatabasesSection({ databases, databaseDetails, hoveredDatabase, 
             </ul>
         </section>
     );
-}
+});

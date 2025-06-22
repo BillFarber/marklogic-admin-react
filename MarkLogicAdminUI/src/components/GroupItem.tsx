@@ -7,7 +7,7 @@ interface GroupItemProps {
     setHoveredGroup: (group: string | null) => void;
 }
 
-export function GroupItem({ group, groupDetails, hoveredGroup, setHoveredGroup }: GroupItemProps) {
+export const GroupItem = React.memo(function GroupItem({ group, groupDetails, hoveredGroup, setHoveredGroup }: GroupItemProps) {
     const isHovered = hoveredGroup === group.idref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
@@ -150,4 +150,4 @@ export function GroupItem({ group, groupDetails, hoveredGroup, setHoveredGroup }
             )}
         </li>
     );
-}
+});

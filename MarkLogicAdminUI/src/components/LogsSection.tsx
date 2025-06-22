@@ -7,7 +7,7 @@ interface LogsSectionProps {
     selectedLogFile?: string;
 }
 
-export function LogsSection({ logs, error, loading, selectedLogFile = 'ErrorLog.txt' }: LogsSectionProps) {
+export const LogsSection = React.memo(function LogsSection({ logs, error, loading, selectedLogFile = 'ErrorLog.txt' }: LogsSectionProps) {
     if (loading) {
         return (
             <div style={{
@@ -116,4 +116,4 @@ export function LogsSection({ logs, error, loading, selectedLogFile = 'ErrorLog.
             </div>
         </div>
     );
-}
+});

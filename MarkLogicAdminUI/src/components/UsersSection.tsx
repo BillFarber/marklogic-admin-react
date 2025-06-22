@@ -8,7 +8,7 @@ interface UsersSectionProps {
     setHoveredUser: (user: string | null) => void;
 }
 
-export function UsersSection({ users, userDetails, hoveredUser, setHoveredUser }: UsersSectionProps) {
+export const UsersSection = React.memo(function UsersSection({ users, userDetails, hoveredUser, setHoveredUser }: UsersSectionProps) {
     if (!users || !Array.isArray(users['user-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -38,4 +38,4 @@ export function UsersSection({ users, userDetails, hoveredUser, setHoveredUser }
             </ul>
         </section>
     );
-}
+});

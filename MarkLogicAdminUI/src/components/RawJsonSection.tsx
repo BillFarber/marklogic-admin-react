@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RawJsonSectionProps } from '../types/marklogic';
 
-export function RawJsonSection({ data, title }: RawJsonSectionProps) {
+export const RawJsonSection = React.memo(function RawJsonSection({ data, title }: RawJsonSectionProps) {
     if (!data) {
         return null;
     }
@@ -23,4 +23,4 @@ export function RawJsonSection({ data, title }: RawJsonSectionProps) {
             </pre>
         </details>
     );
-}
+});

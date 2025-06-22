@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { DatabaseItemProps } from '../types/marklogic';
 
-export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabaseItemProps) {
+export const DatabaseItem = React.memo(function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabaseItemProps) {
     const databaseId = database.idref || database.nameref;
     const details = databaseDetails[databaseId];
     const isHovered = hoveredDatabase === databaseId;
@@ -122,4 +122,4 @@ export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHo
             )}
         </li>
     );
-}
+});

@@ -8,7 +8,7 @@ interface ServerItemProps {
     onDatabaseClick?: (databaseName: string) => void;
 }
 
-export function ServerItem({ server, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServerItemProps) {
+export const ServerItem = React.memo(function ServerItem({ server, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServerItemProps) {
     const isHovered = hoveredServer === server.idref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
@@ -210,4 +210,4 @@ export function ServerItem({ server, serverDetails, hoveredServer, setHoveredSer
             )}
         </li>
     );
-}
+});

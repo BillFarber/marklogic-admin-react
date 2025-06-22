@@ -8,7 +8,7 @@ interface RolesSectionProps {
     setHoveredRole: (role: string | null) => void;
 }
 
-export function RolesSection({ roles, roleDetails, hoveredRole, setHoveredRole }: RolesSectionProps) {
+export const RolesSection = React.memo(function RolesSection({ roles, roleDetails, hoveredRole, setHoveredRole }: RolesSectionProps) {
     if (!roles || !Array.isArray(roles['role-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -38,4 +38,4 @@ export function RolesSection({ roles, roleDetails, hoveredRole, setHoveredRole }
             </ul>
         </section>
     );
-}
+});

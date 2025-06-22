@@ -7,7 +7,7 @@ interface RoleItemProps {
     setHoveredRole: (role: string | null) => void;
 }
 
-export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: RoleItemProps) {
+export const RoleItem = React.memo(function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: RoleItemProps) {
     const isHovered = hoveredRole === role.nameref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
@@ -137,4 +137,4 @@ export function RoleItem({ role, roleDetails, hoveredRole, setHoveredRole }: Rol
             )}
         </li>
     );
-}
+});

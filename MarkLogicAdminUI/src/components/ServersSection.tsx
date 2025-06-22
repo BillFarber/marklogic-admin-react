@@ -9,7 +9,7 @@ interface ServersSectionProps {
     onDatabaseClick?: (databaseName: string) => void;
 }
 
-export function ServersSection({ servers, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServersSectionProps) {
+export const ServersSection = React.memo(function ServersSection({ servers, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServersSectionProps) {
     if (!servers || !Array.isArray(servers['server-default-list']?.['list-items']?.['list-item'])) {
         return null;
     }
@@ -40,4 +40,4 @@ export function ServersSection({ servers, serverDetails, hoveredServer, setHover
             </ul>
         </section>
     );
-}
+});

@@ -7,7 +7,7 @@ interface UserItemProps {
     setHoveredUser: (user: string | null) => void;
 }
 
-export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: UserItemProps) {
+export const UserItem = React.memo(function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: UserItemProps) {
     const isHovered = hoveredUser === user.nameref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
@@ -132,4 +132,4 @@ export function UserItem({ user, userDetails, hoveredUser, setHoveredUser }: Use
             )}
         </li>
     );
-}
+});

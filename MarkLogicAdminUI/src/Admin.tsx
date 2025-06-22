@@ -1,5 +1,5 @@
 import React from 'react';
-import { SecurityTab, DataTab, InfrastructureTab, LogsTab } from './components';
+import { SecurityTab, DataTab, InfrastructureTab, LogsTab, AsyncErrorBoundary } from './components';
 import { useDatabases } from './hooks/useDatabases';
 import { useForests } from './hooks/useForests';
 import { useServers } from './hooks/useServers';
@@ -147,54 +147,62 @@ function Admin() {
                 {/* Tab Content */}
                 <div style={{ textAlign: 'left' }}>
                     {activeTab === 'infrastructure' && (
-                        <InfrastructureTab
-                            servers={servers}
-                            serverDetails={serverDetails}
-                            hoveredServer={hoveredServer}
-                            setHoveredServer={setHoveredServer}
-                            groups={groups}
-                            groupDetails={groupDetails}
-                            hoveredGroup={hoveredGroup}
-                            setHoveredGroup={setHoveredGroup}
-                            onDatabaseClick={(_databaseName) => {
-                                setActiveTab('data');
-                                // Could add logic to highlight the specific database
-                            }}
-                        />
+                        <AsyncErrorBoundary componentName="Infrastructure Tab">
+                            <InfrastructureTab
+                                servers={servers}
+                                serverDetails={serverDetails}
+                                hoveredServer={hoveredServer}
+                                setHoveredServer={setHoveredServer}
+                                groups={groups}
+                                groupDetails={groupDetails}
+                                hoveredGroup={hoveredGroup}
+                                setHoveredGroup={setHoveredGroup}
+                                onDatabaseClick={(_databaseName) => {
+                                    setActiveTab('data');
+                                    // Could add logic to highlight the specific database
+                                }}
+                            />
+                        </AsyncErrorBoundary>
                     )}
 
                     {activeTab === 'data' && (
-                        <DataTab
-                            databases={databases}
-                            databaseDetails={databaseDetails}
-                            forests={forests}
-                            forestDetails={forestDetails}
-                            hoveredDatabase={hoveredDatabase}
-                            setHoveredDatabase={setHoveredDatabase}
-                            hoveredForest={hoveredForest}
-                            setHoveredForest={setHoveredForest}
-                        />
+                        <AsyncErrorBoundary componentName="Data Tab">
+                            <DataTab
+                                databases={databases}
+                                databaseDetails={databaseDetails}
+                                forests={forests}
+                                forestDetails={forestDetails}
+                                hoveredDatabase={hoveredDatabase}
+                                setHoveredDatabase={setHoveredDatabase}
+                                hoveredForest={hoveredForest}
+                                setHoveredForest={setHoveredForest}
+                            />
+                        </AsyncErrorBoundary>
                     )}
 
                     {activeTab === 'users' && (
-                        <SecurityTab
-                            users={users}
-                            roles={roles}
-                            userDetails={userDetails}
-                            roleDetails={roleDetails}
-                            hoveredUser={hoveredUser}
-                            setHoveredUser={setHoveredUser}
-                            hoveredRole={hoveredRole}
-                            setHoveredRole={setHoveredRole}
-                        />
+                        <AsyncErrorBoundary componentName="Security Tab">
+                            <SecurityTab
+                                users={users}
+                                roles={roles}
+                                userDetails={userDetails}
+                                roleDetails={roleDetails}
+                                hoveredUser={hoveredUser}
+                                setHoveredUser={setHoveredUser}
+                                hoveredRole={hoveredRole}
+                                setHoveredRole={setHoveredRole}
+                            />
+                        </AsyncErrorBoundary>
                     )}
 
                     {activeTab === 'logs' && (
-                        <LogsTab
-                            logs={logs}
-                            error={logsError}
-                            loading={logsLoading}
-                        />
+                        <AsyncErrorBoundary componentName="Logs Tab">
+                            <LogsTab
+                                logs={logs}
+                                error={logsError}
+                                loading={logsLoading}
+                            />
+                        </AsyncErrorBoundary>
                     )}
                 </div>
             </div>

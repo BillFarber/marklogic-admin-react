@@ -16,3 +16,7 @@ export { DatabaseItem } from './DatabaseItem';
 export { ForestItem } from './ForestItem';
 export { ServerItem } from './ServerItem';
 export { GroupItem } from './GroupItem';
+
+// Error Boundaries
+export { default as ErrorBoundary } from './ErrorBoundary';
+export { AsyncErrorBoundary } from './AsyncErrorBoundary';

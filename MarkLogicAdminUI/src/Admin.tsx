@@ -1,5 +1,5 @@
 import React from 'react';
-import { SecurityTab, DataTab, InfrastructureTab } from './components';
+import { SecurityTab, DataTab, InfrastructureTab, LogsTab } from './components';
 
 function Admin() {
     const [databases, setDatabases] = React.useState<any>(null);
@@ -14,6 +14,9 @@ function Admin() {
     const [userDetails, setUserDetails] = React.useState<Record<string, any>>({});
     const [roles, setRoles] = React.useState<any>(null);
     const [roleDetails, setRoleDetails] = React.useState<Record<string, any>>({});
+    const [logs, setLogs] = React.useState<any>(null);
+    const [logsError, setLogsError] = React.useState<string | null>(null);
+    const [logsLoading, setLogsLoading] = React.useState<boolean>(false);
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
@@ -373,10 +376,52 @@ function Admin() {
                             cursor: 'pointer',
                             borderBottom: activeTab === 'users' ? 'none' : '2px solid #ddd',
                             fontWeight: activeTab === 'users' ? 'bold' : 'normal',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            marginRight: '4px'
                         }}
                     >
                         Security (Users & Roles)
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveTab('logs');
+                            // Fetch logs when the tab is clicked if not already loaded
+                            if (!logs && !logsLoading) {
+                                setLogsLoading(true);
+                                fetch('http://localhost:8080/manage/v2/logs?filename=ErrorLog.txt&format=text', {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'text/plain' }
+                                })
+                                    .then(res => {
+                                        if (!res.ok) {
+                                            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                                        }
+                                        return res.text();
+                                    })
+                                    .then(data => {
+                                        setLogs(data);
+                                        setLogsError(null);
+                                    })
+                                    .catch(e => {
+                                        setLogsError(e.message);
+                                    })
+                                    .finally(() => {
+                                        setLogsLoading(false);
+                                    });
+                            }
+                        }}
+                        style={{
+                            padding: '12px 24px',
+                            border: 'none',
+                            backgroundColor: activeTab === 'logs' ? '#8B4513' : '#f5f5f5', // Brown for logs
+                            color: activeTab === 'logs' ? '#fff' : '#333',
+                            cursor: 'pointer',
+                            borderBottom: activeTab === 'logs' ? 'none' : '2px solid #ddd',
+                            fontWeight: activeTab === 'logs' ? 'bold' : 'normal',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        Logs
                     </button>
                 </div>
 
@@ -418,6 +463,14 @@ function Admin() {
                             setHoveredUser={setHoveredUser}
                             hoveredRole={hoveredRole}
                             setHoveredRole={setHoveredRole}
+                        />
+                    )}
+
+                    {activeTab === 'logs' && (
+                        <LogsTab
+                            logs={logs}
+                            error={logsError}
+                            loading={logsLoading}
                         />
                     )}
                 </div>

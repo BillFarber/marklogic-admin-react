@@ -7,6 +7,7 @@ export { RawJsonSection } from './RawJsonSection';
 
 export { DataTab } from './DataTab';
 export { InfrastructureTab } from './InfrastructureTab';
+export { LogsTab } from './LogsTab';
 export { DatabasesSection } from './DatabasesSection';
 export { ForestsSection } from './ForestsSection';
 export { ServersSection } from './ServersSection';

@@ -1,12 +1,7 @@
 import React from 'react';
-import { DatabaseItem } from './DatabaseItem';
 
-interface DatabasesSectionProps {
-    databases: any;
-    databaseDetails: Record<string, any>;
-    hoveredDatabase: string | null;
-    setHoveredDatabase: (db: string | null) => void;
-}
+import type { DatabasesSectionProps } from '../types/marklogic';
+import { DatabaseItem } from './DatabaseItem';
 
 export function DatabasesSection({ databases, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabasesSectionProps) {
     if (!databases || !Array.isArray(databases['database-default-list']?.['list-items']?.['list-item'])) {

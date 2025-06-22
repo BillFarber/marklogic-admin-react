@@ -1,19 +1,9 @@
 import React from 'react';
+
+import type { InfrastructureTabProps } from '../types/marklogic';
 import { ServersSection } from './ServersSection';
 import { GroupsSection } from './GroupsSection';
 import { RawJsonSection } from './RawJsonSection';
-
-interface InfrastructureTabProps {
-    servers: any;
-    serverDetails: Record<string, any>;
-    hoveredServer: string | null;
-    setHoveredServer: (server: string | null) => void;
-    groups: any;
-    groupDetails: Record<string, any>;
-    hoveredGroup: string | null;
-    setHoveredGroup: (group: string | null) => void;
-    onDatabaseClick?: (databaseName: string) => void;
-}
 
 export function InfrastructureTab({
     servers,

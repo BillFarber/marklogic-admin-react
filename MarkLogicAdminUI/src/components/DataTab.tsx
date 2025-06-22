@@ -1,18 +1,9 @@
 import React from 'react';
+
+import type { DataTabProps } from '../types/marklogic';
 import { DatabasesSection } from './DatabasesSection';
 import { ForestsSection } from './ForestsSection';
 import { RawJsonSection } from './RawJsonSection';
-
-interface DataTabProps {
-    databases: any;
-    databaseDetails: Record<string, any>;
-    forests: any;
-    forestDetails: Record<string, any>;
-    hoveredDatabase: string | null;
-    setHoveredDatabase: (db: string | null) => void;
-    hoveredForest: string | null;
-    setHoveredForest: (forest: string | null) => void;
-}
 
 export function DataTab({
     databases,

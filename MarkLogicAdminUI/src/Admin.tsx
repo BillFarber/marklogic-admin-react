@@ -1,20 +1,35 @@
 import React from 'react';
 import { SecurityTab, DataTab, InfrastructureTab, LogsTab } from './components';
+import type {
+    DatabaseListResponse,
+    DatabaseDetailsMap,
+    ForestListResponse,
+    ForestDetailsMap,
+    ServerListResponse,
+    ServerDetailsMap,
+    GroupListResponse,
+    GroupDetailsMap,
+    UserListResponse,
+    UserDetailsMap,
+    RoleListResponse,
+    RoleDetailsMap,
+    LogsResponse
+} from './types/marklogic';
 
 function Admin() {
-    const [databases, setDatabases] = React.useState<any>(null);
-    const [databaseDetails, setDatabaseDetails] = React.useState<Record<string, any>>({});
-    const [forests, setForests] = React.useState<any>(null);
-    const [forestDetails, setForestDetails] = React.useState<Record<string, any>>({});
-    const [servers, setServers] = React.useState<any>(null);
-    const [serverDetails, setServerDetails] = React.useState<Record<string, any>>({});
-    const [groups, setGroups] = React.useState<any>(null);
-    const [groupDetails, setGroupDetails] = React.useState<Record<string, any>>({});
-    const [users, setUsers] = React.useState<any>(null);
-    const [userDetails, setUserDetails] = React.useState<Record<string, any>>({});
-    const [roles, setRoles] = React.useState<any>(null);
-    const [roleDetails, setRoleDetails] = React.useState<Record<string, any>>({});
-    const [logs, setLogs] = React.useState<any>(null);
+    const [databases, setDatabases] = React.useState<DatabaseListResponse | null>(null);
+    const [databaseDetails, setDatabaseDetails] = React.useState<DatabaseDetailsMap>({});
+    const [forests, setForests] = React.useState<ForestListResponse | null>(null);
+    const [forestDetails, setForestDetails] = React.useState<ForestDetailsMap>({});
+    const [servers, setServers] = React.useState<ServerListResponse | null>(null);
+    const [serverDetails, setServerDetails] = React.useState<ServerDetailsMap>({});
+    const [groups, setGroups] = React.useState<GroupListResponse | null>(null);
+    const [groupDetails, setGroupDetails] = React.useState<GroupDetailsMap>({});
+    const [users, setUsers] = React.useState<UserListResponse | null>(null);
+    const [userDetails, setUserDetails] = React.useState<UserDetailsMap>({});
+    const [roles, setRoles] = React.useState<RoleListResponse | null>(null);
+    const [roleDetails, setRoleDetails] = React.useState<RoleDetailsMap>({});
+    const [logs, setLogs] = React.useState<LogsResponse | null>(null);
     const [logsError, setLogsError] = React.useState<string | null>(null);
     const [logsLoading, setLogsLoading] = React.useState<boolean>(false);
     const [error, setError] = React.useState<string | null>(null);
@@ -437,7 +452,7 @@ function Admin() {
                             groupDetails={groupDetails}
                             hoveredGroup={hoveredGroup}
                             setHoveredGroup={setHoveredGroup}
-                            onDatabaseClick={(databaseName) => {
+                            onDatabaseClick={(_databaseName) => {
                                 setActiveTab('data');
                                 // Could add logic to highlight the specific database
                             }}

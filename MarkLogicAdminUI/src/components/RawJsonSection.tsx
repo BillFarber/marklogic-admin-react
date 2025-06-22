@@ -1,9 +1,6 @@
 import React from 'react';
 
-interface RawJsonSectionProps {
-    data: any;
-    title: string;
-}
+import type { RawJsonSectionProps } from '../types/marklogic';
 
 export function RawJsonSection({ data, title }: RawJsonSectionProps) {
     if (!data) {

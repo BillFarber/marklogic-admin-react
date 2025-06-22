@@ -1,11 +1,7 @@
 import React from 'react';
-import { LogsSection } from './LogsSection';
 
-interface LogsTabProps {
-    logs: any;
-    error: string | null;
-    loading: boolean;
-}
+import type { LogsTabProps } from '../types/marklogic';
+import { LogsSection } from './LogsSection';
 
 export function LogsTab({
     logs: initialLogs,

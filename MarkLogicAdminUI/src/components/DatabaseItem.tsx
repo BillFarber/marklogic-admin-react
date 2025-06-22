@@ -1,15 +1,11 @@
 import React from 'react';
 
-interface DatabaseItemProps {
-    database: any;
-    databaseDetails: Record<string, any>;
-    hoveredDatabase: string | null;
-    setHoveredDatabase: (db: string | null) => void;
-}
+import type { DatabaseItemProps } from '../types/marklogic';
 
 export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabaseItemProps) {
-    const details = databaseDetails[database.idref];
-    const isHovered = hoveredDatabase === database.idref;
+    const databaseId = database.idref || database.nameref;
+    const details = databaseDetails[databaseId];
+    const isHovered = hoveredDatabase === databaseId;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
 
     const handleMouseEnter = () => {
@@ -17,7 +13,7 @@ export function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHo
             clearTimeout(hoverTimeout);
             setHoverTimeout(null);
         }
-        setHoveredDatabase(database.idref);
+        setHoveredDatabase(databaseId);
     };
 
     const handleMouseLeave = () => {

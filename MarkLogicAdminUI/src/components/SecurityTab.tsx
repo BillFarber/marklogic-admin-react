@@ -1,18 +1,9 @@
 import React from 'react';
+
+import type { SecurityTabProps } from '../types/marklogic';
 import { UsersSection } from './UsersSection';
 import { RolesSection } from './RolesSection';
 import { RawJsonSection } from './RawJsonSection';
-
-interface SecurityTabProps {
-    users: any;
-    roles: any;
-    userDetails: Record<string, any>;
-    roleDetails: Record<string, any>;
-    hoveredUser: string | null;
-    setHoveredUser: (user: string | null) => void;
-    hoveredRole: string | null;
-    setHoveredRole: (role: string | null) => void;
-}
 
 export function SecurityTab({
     users,

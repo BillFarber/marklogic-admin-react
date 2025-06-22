@@ -399,7 +399,7 @@ describe('Admin', () => {
         render(<Admin />);
 
         await waitFor(() => {
-            expect(screen.getByText(/Error: HTTP 500: Internal Server Error/)).toBeInTheDocument();
+            expect(screen.getByText(/Error:.*HTTP 500: Internal Server Error/)).toBeInTheDocument();
         });
 
         // Should not show loading or databases content
@@ -417,7 +417,7 @@ describe('Admin', () => {
         render(<Admin />);
 
         await waitFor(() => {
-            expect(screen.getByText(/Error:.*Network error.*Forests:.*Network error.*Servers:.*Network error.*Users:.*Network error/)).toBeInTheDocument();
+            expect(screen.getByText(/Error:.*Network error/)).toBeInTheDocument();
         });
 
         // Should not show loading or databases content

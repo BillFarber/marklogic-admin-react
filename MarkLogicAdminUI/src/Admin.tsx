@@ -1,8 +1,8 @@
 import React from 'react';
 import { SecurityTab, DataTab, InfrastructureTab, LogsTab } from './components';
+import { useDatabases } from './hooks/useDatabases';
+import { useHover } from './hooks/useHover';
 import type {
-    DatabaseListResponse,
-    DatabaseDetailsMap,
     ForestListResponse,
     ForestDetailsMap,
     ServerListResponse,
@@ -17,8 +17,18 @@ import type {
 } from './types/marklogic';
 
 function Admin() {
-    const [databases, setDatabases] = React.useState<DatabaseListResponse | null>(null);
-    const [databaseDetails, setDatabaseDetails] = React.useState<DatabaseDetailsMap>({});
+    // Use custom hook for databases
+    const { databases, databaseDetails, loading: databasesLoading, error: databasesError } = useDatabases();
+
+    // Use custom hooks for hover states
+    const databaseHover = useHover();
+    const forestHover = useHover();
+    const serverHover = useHover();
+    const groupHover = useHover();
+    const userHover = useHover();
+    const roleHover = useHover();
+
+    // Original state for other entities
     const [forests, setForests] = React.useState<ForestListResponse | null>(null);
     const [forestDetails, setForestDetails] = React.useState<ForestDetailsMap>({});
     const [servers, setServers] = React.useState<ServerListResponse | null>(null);
@@ -34,70 +44,19 @@ function Admin() {
     const [logsLoading, setLogsLoading] = React.useState<boolean>(false);
     const [error, setError] = React.useState<string | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
-    const [hoveredDatabase, setHoveredDatabase] = React.useState<string | null>(null);
-    const [hoveredForest, setHoveredForest] = React.useState<string | null>(null);
-    const [hoveredServer, setHoveredServer] = React.useState<string | null>(null);
-    const [hoveredGroup, setHoveredGroup] = React.useState<string | null>(null);
-    const [hoveredUser, setHoveredUser] = React.useState<string | null>(null);
-    const [hoveredRole, setHoveredRole] = React.useState<string | null>(null);
     const [activeTab, setActiveTab] = React.useState<string>('infrastructure');
 
     React.useEffect(() => {
         document.title = 'MarkLogic Admin';
 
-        // Make requests to databases, forests, servers, groups, users, and roles endpoints
-        const databasesUrl = 'http://localhost:8080/manage/v2/databases';
+        // Make requests to forests, servers, groups, users, and roles endpoints (databases handled by hook)
         const forestsUrl = 'http://localhost:8080/manage/v2/forests?format=json';
         const serversUrl = 'http://localhost:8080/manage/v2/servers?format=json';
         const groupsUrl = 'http://localhost:8080/manage/v2/groups?format=json';
         const usersUrl = 'http://localhost:8080/manage/v2/users?format=json';
         const rolesUrl = 'http://localhost:8080/manage/v2/roles?format=json';
 
-        // Create promises for all six endpoints
-        const databasesPromise = fetch(databasesUrl, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-        })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-                }
-                return res.json();
-            })
-            .then(async (data) => {
-                setDatabases(data);
-
-                // Fetch details for each database using idref
-                if (data && Array.isArray(data['database-default-list']?.['list-items']?.['list-item'])) {
-                    const dbList = data['database-default-list']['list-items']['list-item'];
-                    const details: Record<string, any> = {};
-
-                    // Fetch details for each database in parallel
-                    const detailPromises = dbList
-                        .filter((db: any) => db.idref)
-                        .map(async (db: any) => {
-                            try {
-                                const detailUrl = `http://localhost:8080/manage/v2/databases/${db.idref}/properties?format=json`;
-                                const response = await fetch(detailUrl, {
-                                    method: 'GET',
-                                    headers: { 'Accept': 'application/json' }
-                                });
-
-                                if (response.ok) {
-                                    const detailData = await response.json();
-                                    details[db.idref] = detailData;
-                                }
-                            } catch (err) {
-                                console.warn(`Failed to fetch details for database ${db.nameref}:`, err);
-                            }
-                        });
-
-                    await Promise.allSettled(detailPromises);
-                    setDatabaseDetails(details);
-                }
-            })
-            .catch(e => setError(e.message));
-
+        // Create promises for five endpoints (databases handled by hook)
         const forestsPromise = fetch(forestsUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
@@ -318,10 +277,16 @@ function Admin() {
             })
             .catch(e => setError(prev => prev ? `${prev}; Roles: ${e.message}` : `Roles: ${e.message}`));
 
-        // Wait for all requests to complete, then stop loading
-        Promise.allSettled([databasesPromise, forestsPromise, serversPromise, groupsPromise, usersPromise, rolesPromise])
+        // Wait for all requests to complete, then stop loading (databases handled by hook)
+        Promise.allSettled([forestsPromise, serversPromise, groupsPromise, usersPromise, rolesPromise])
             .then(() => setLoading(false));
     }, []);
+
+    // Combine loading states
+    const isLoading = loading || databasesLoading;
+
+    // Combine error states
+    const combinedError = [error, databasesError].filter(Boolean).join('; ') || null;
 
     return (
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
@@ -329,7 +294,7 @@ function Admin() {
             <p>Welcome to the admin page using Spring Boot proxy.</p>
 
             {/* Loading and Error States */}
-            {loading && (
+            {isLoading && (
                 <div style={{ marginBottom: '1rem' }}>
                     <div>Loading database details...</div>
                     <div>Loading forests...</div>
@@ -339,7 +304,7 @@ function Admin() {
                     <div>Loading roles...</div>
                 </div>
             )}
-            {error && <div style={{ color: 'red', marginBottom: '1rem' }}>Error: {error}</div>}
+            {combinedError && <div style={{ color: 'red', marginBottom: '1rem' }}>Error: {combinedError}</div>}
 
             {/* Tab Navigation */}
             <div style={{ margin: '2rem auto', maxWidth: 1000 }}>
@@ -446,12 +411,12 @@ function Admin() {
                         <InfrastructureTab
                             servers={servers}
                             serverDetails={serverDetails}
-                            hoveredServer={hoveredServer}
-                            setHoveredServer={setHoveredServer}
+                            hoveredServer={serverHover.hoveredItem}
+                            setHoveredServer={serverHover.setHoveredItem}
                             groups={groups}
                             groupDetails={groupDetails}
-                            hoveredGroup={hoveredGroup}
-                            setHoveredGroup={setHoveredGroup}
+                            hoveredGroup={groupHover.hoveredItem}
+                            setHoveredGroup={groupHover.setHoveredItem}
                             onDatabaseClick={(_databaseName) => {
                                 setActiveTab('data');
                                 // Could add logic to highlight the specific database
@@ -465,10 +430,10 @@ function Admin() {
                             databaseDetails={databaseDetails}
                             forests={forests}
                             forestDetails={forestDetails}
-                            hoveredDatabase={hoveredDatabase}
-                            setHoveredDatabase={setHoveredDatabase}
-                            hoveredForest={hoveredForest}
-                            setHoveredForest={setHoveredForest}
+                            hoveredDatabase={databaseHover.hoveredItem}
+                            setHoveredDatabase={databaseHover.setHoveredItem}
+                            hoveredForest={forestHover.hoveredItem}
+                            setHoveredForest={forestHover.setHoveredItem}
                         />
                     )}
 
@@ -478,10 +443,10 @@ function Admin() {
                             roles={roles}
                             userDetails={userDetails}
                             roleDetails={roleDetails}
-                            hoveredUser={hoveredUser}
-                            setHoveredUser={setHoveredUser}
-                            hoveredRole={hoveredRole}
-                            setHoveredRole={setHoveredRole}
+                            hoveredUser={userHover.hoveredItem}
+                            setHoveredUser={userHover.setHoveredItem}
+                            hoveredRole={roleHover.hoveredItem}
+                            setHoveredRole={roleHover.setHoveredItem}
                         />
                     )}
 

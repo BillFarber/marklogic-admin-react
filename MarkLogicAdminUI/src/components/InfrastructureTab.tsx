@@ -31,16 +31,6 @@ export function InfrastructureTab({
                 flexWrap: 'wrap'
             }}>
                 <div style={{ flex: '1', minWidth: '300px' }}>
-                    <ServersSection
-                        servers={servers}
-                        serverDetails={serverDetails}
-                        hoveredServer={hoveredServer}
-                        setHoveredServer={setHoveredServer}
-                        onDatabaseClick={onDatabaseClick}
-                    />
-                </div>
-
-                <div style={{ flex: '1', minWidth: '300px' }}>
                     <GroupsSection
                         groups={groups}
                         groupDetails={groupDetails}
@@ -57,14 +47,19 @@ export function InfrastructureTab({
                         setHoveredHost={setHoveredHost}
                     />
                 </div>
+
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <ServersSection
+                        servers={servers}
+                        serverDetails={serverDetails}
+                        hoveredServer={hoveredServer}
+                        setHoveredServer={setHoveredServer}
+                        onDatabaseClick={onDatabaseClick}
+                    />
+                </div>
             </div>
 
             {/* Raw JSON data sections for Infrastructure */}
-            <RawJsonSection
-                data={servers}
-                title="View Raw Servers JSON"
-            />
-
             <RawJsonSection
                 data={groups}
                 title="View Raw Groups JSON"
@@ -73,6 +68,11 @@ export function InfrastructureTab({
             <RawJsonSection
                 data={hosts}
                 title="View Raw Hosts JSON"
+            />
+
+            <RawJsonSection
+                data={servers}
+                title="View Raw Servers JSON"
             />
         </div>
     );

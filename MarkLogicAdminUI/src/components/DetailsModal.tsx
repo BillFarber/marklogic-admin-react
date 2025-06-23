@@ -372,6 +372,9 @@ export const DetailsModal = React.memo(function DetailsModal({
             onClick={handleBackdropClick}
         >
             <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title"
                 style={{
                     backgroundColor: '#fff',
                     borderRadius: '8px',
@@ -396,7 +399,7 @@ export const DetailsModal = React.memo(function DetailsModal({
                         alignItems: 'center'
                     }}
                 >
-                    <h2 style={{ margin: 0, fontSize: '18px' }}>
+                    <h2 id="modal-title" style={{ margin: 0, fontSize: '18px' }}>
                         {title} Details
                     </h2>
                     <button

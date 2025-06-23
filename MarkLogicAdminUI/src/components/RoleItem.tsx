@@ -54,6 +54,7 @@ export const RoleItem = React.memo(function RoleItem({ role, roleDetails, hovere
         <li
             key={role.nameref}
             data-idref={role.idref}
+            data-testid={`role-item-${role.idref}`}
             style={{
                 marginBottom: '8px',
                 position: 'relative',

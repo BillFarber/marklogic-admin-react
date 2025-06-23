@@ -74,7 +74,7 @@ export const GroupItem = React.memo(function GroupItem({ group, groupDetails, ho
                 {group.nameref}
             </strong>
             <div style={{ fontSize: '0.9em', color: '#ccc', marginTop: '4px' }}>
-                ID: {group.idref}
+                ID: {group.idref || 'N/A'}
             </div>
 
             {/* Detailed hover tooltip */}
@@ -150,14 +150,29 @@ export const GroupItem = React.memo(function GroupItem({ group, groupDetails, ho
                                 {groupDetails[group.nameref]['group-properties']?.['group-name'] || group.nameref}
                             </div>
 
-                            {/* List information */}
-                            {groupDetails[group.nameref]['group-properties']?.['list-cache-partitions'] && (
+                            {/* Path information */}
+                            {groupDetails[group.nameref]['group-properties']?.['modules-root'] && (
                                 <div>
-                                    <strong style={{ color: '#4FC3F7' }}>List Cache Partitions:</strong>{' '}
-                                    {groupDetails[group.nameref]['group-properties']['list-cache-partitions']}
+                                    <strong style={{ color: '#4FC3F7' }}>Modules Root:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['modules-root']}
                                 </div>
                             )}
 
+                            {groupDetails[group.nameref]['group-properties']?.['root'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>Root:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['root']}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['http-user-agent'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>HTTP User Agent:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['http-user-agent']}
+                                </div>
+                            )}
+
+                            {/* Cache information */}
                             {groupDetails[group.nameref]['group-properties']?.['list-cache-size'] && (
                                 <div>
                                     <strong style={{ color: '#4FC3F7' }}>List Cache Size:</strong>{' '}
@@ -165,17 +180,54 @@ export const GroupItem = React.memo(function GroupItem({ group, groupDetails, ho
                                 </div>
                             )}
 
-                            {groupDetails[group.nameref]['group-properties']?.['compressed-tree-cache-size'] && (
+                            {groupDetails[group.nameref]['group-properties']?.['tree-cache-size'] && (
                                 <div>
-                                    <strong style={{ color: '#4FC3F7' }}>Compressed Tree Cache Size:</strong>{' '}
-                                    {groupDetails[group.nameref]['group-properties']['compressed-tree-cache-size']}
+                                    <strong style={{ color: '#4FC3F7' }}>Tree Cache Size:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['tree-cache-size']}
                                 </div>
                             )}
 
-                            {groupDetails[group.nameref]['group-properties']?.['expanded-tree-cache-size'] && (
+                            {groupDetails[group.nameref]['group-properties']?.['triple-cache-size'] && (
                                 <div>
-                                    <strong style={{ color: '#4FC3F7' }}>Expanded Tree Cache Size:</strong>{' '}
-                                    {groupDetails[group.nameref]['group-properties']['expanded-tree-cache-size']}
+                                    <strong style={{ color: '#4FC3F7' }}>Triple Cache Size:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['triple-cache-size']}
+                                </div>
+                            )}
+
+                            {/* Timeout information */}
+                            {groupDetails[group.nameref]['group-properties']?.['smtp-timeout'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>SMTP Timeout:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['smtp-timeout']}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['xdqp-timeout'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>XDQP Timeout:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['xdqp-timeout']}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['host-timeout'] && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>Host Timeout:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['host-timeout']}
+                                </div>
+                            )}
+
+                            {/* Performance information */}
+                            {groupDetails[group.nameref]['group-properties']?.['metering-enabled'] !== undefined && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>Metering Enabled:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['metering-enabled'].toString()}
+                                </div>
+                            )}
+
+                            {groupDetails[group.nameref]['group-properties']?.['performance-metering-enabled'] !== undefined && (
+                                <div>
+                                    <strong style={{ color: '#4FC3F7' }}>Performance Metering:</strong>{' '}
+                                    {groupDetails[group.nameref]['group-properties']['performance-metering-enabled'].toString()}
                                 </div>
                             )}
                         </div>

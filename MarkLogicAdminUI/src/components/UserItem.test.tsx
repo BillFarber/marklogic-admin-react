@@ -147,7 +147,7 @@ describe('UserItem', () => {
 
             // Verify modal is open by checking for modal-specific elements
             expect(screen.getByTitle('Close')).toBeInTheDocument();
-            
+
             // Close modal
             const closeButton = screen.getByTitle('Close');
             fireEvent.click(closeButton);

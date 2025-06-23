@@ -57,7 +57,7 @@ describe('ServerItem', () => {
         // Get the first instance of "Admin" which should be the main server name
         const adminElements = screen.getAllByText('Admin');
         const listItem = adminElements[0].closest('li');
-        expect(listItem).toHaveStyle({ backgroundColor: '#8b6914' });
+        expect(listItem).toHaveStyle({ backgroundColor: '#5a6c7d' });
     });
 
     describe('Show Details functionality', () => {

@@ -12,7 +12,7 @@ describe('DatabaseItem', () => {
     };
 
     const mockDatabaseDetails = {
-        'Documents': {
+        'db123': {
             'database-name': 'Documents',
             'enabled': true,
             'uri-lexicon': false

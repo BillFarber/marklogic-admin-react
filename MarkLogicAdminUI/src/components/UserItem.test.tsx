@@ -105,4 +105,72 @@ describe('UserItem', () => {
         // Should not crash and should handle the missing nameref appropriately
         expect(screen.queryByText('test-user')).not.toBeInTheDocument();
     });
+
+    describe('Show Details functionality', () => {
+        it('shows "Show Details" button in hover tooltip', () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredUser: 'test-user'
+            };
+
+            render(<UserItem {...propsWithHover} />);
+
+            expect(screen.getByText('Show Details')).toBeInTheDocument();
+        });
+
+        it('opens DetailsModal when "Show Details" button is clicked', () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredUser: 'test-user'
+            };
+
+            render(<UserItem {...propsWithHover} />);
+
+            const showDetailsButton = screen.getByText('Show Details');
+            fireEvent.click(showDetailsButton);
+
+            // Modal should be open
+            expect(screen.getByText('User Details:')).toBeInTheDocument();
+        });
+
+        it('closes DetailsModal when close button is clicked', async () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredUser: 'test-user'
+            };
+
+            render(<UserItem {...propsWithHover} />);
+
+            // Open modal
+            const showDetailsButton = screen.getByText('Show Details');
+            fireEvent.click(showDetailsButton);
+
+            // Verify modal is open by checking for modal-specific elements
+            expect(screen.getByTitle('Close')).toBeInTheDocument();
+            
+            // Close modal
+            const closeButton = screen.getByTitle('Close');
+            fireEvent.click(closeButton);
+
+            // Modal should be closed - check for modal backdrop which should be gone
+            expect(screen.queryByTitle('Close')).not.toBeInTheDocument();
+        });
+
+        it('passes userDetails to DetailsModal', () => {
+            const propsWithDetails = {
+                ...defaultProps,
+                hoveredUser: 'test-user',
+                userDetails: mockUserDetails
+            };
+
+            render(<UserItem {...propsWithDetails} />);
+
+            const showDetailsButton = screen.getByText('Show Details');
+            fireEvent.click(showDetailsButton);
+
+            // Check for modal-specific elements to distinguish from tooltip
+            expect(screen.getByTitle('Close')).toBeInTheDocument();
+            expect(screen.getByText('Complete JSON Data')).toBeInTheDocument();
+        });
+    });
 });

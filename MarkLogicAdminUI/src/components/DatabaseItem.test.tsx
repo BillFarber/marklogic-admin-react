@@ -128,4 +128,90 @@ describe('DatabaseItem', () => {
         const listItem = screen.getByText('Test-Database').closest('li');
         expect(listItem).not.toHaveAttribute('data-idref');
     });
+
+    describe('Show Details functionality', () => {
+        it('shows "Show Details" button in hover tooltip when database has details', () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredDatabase: 'db123',
+                databaseDetails: mockDatabaseDetails
+            };
+
+            render(<DatabaseItem {...propsWithHover} />);
+
+            expect(screen.getByText('Show Details')).toBeInTheDocument();
+        });
+
+        it('does not show "Show Details" button when not hovered', () => {
+            render(<DatabaseItem {...defaultProps} />);
+
+            expect(screen.queryByText('Show Details')).not.toBeInTheDocument();
+        });
+
+        it('does not show "Show Details" button when hovered but no details', () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredDatabase: 'db123'
+                // No databaseDetails provided
+            };
+
+            render(<DatabaseItem {...propsWithHover} />);
+
+            expect(screen.queryByText('Show Details')).not.toBeInTheDocument();
+        });
+
+        it('opens DetailsModal when "Show Details" button is clicked', () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredDatabase: 'db123',
+                databaseDetails: mockDatabaseDetails
+            };
+
+            render(<DatabaseItem {...propsWithHover} />);
+
+            const showDetailsButton = screen.getByText('Show Details');
+            fireEvent.click(showDetailsButton);
+
+            // Modal should be open and show the database details
+            expect(screen.getByText('Database Details:')).toBeInTheDocument();
+        });
+
+        it('closes DetailsModal when close button is clicked', () => {
+            const propsWithHover = {
+                ...defaultProps,
+                hoveredDatabase: 'db123',
+                databaseDetails: mockDatabaseDetails
+            };
+
+            render(<DatabaseItem {...propsWithHover} />);
+
+            // Open modal
+            const showDetailsButton = screen.getByText('Show Details');
+            fireEvent.click(showDetailsButton);
+
+            // Close modal
+            const closeButton = screen.getByText('×');
+            fireEvent.click(closeButton);
+
+            // Modal should be closed
+            expect(screen.queryByText('Database Details:')).not.toBeInTheDocument();
+        });
+
+        it('passes correct data to DetailsModal', () => {
+            const propsWithDetails = {
+                ...defaultProps,
+                hoveredDatabase: 'db123',
+                databaseDetails: mockDatabaseDetails
+            };
+
+            render(<DatabaseItem {...propsWithDetails} />);
+
+            const showDetailsButton = screen.getByText('Show Details');
+            fireEvent.click(showDetailsButton);
+
+            // Check that modal shows database details
+            expect(screen.getByText('Database Details:')).toBeInTheDocument();
+            expect(screen.getByText('Complete JSON Data')).toBeInTheDocument();
+        });
+    });
 });

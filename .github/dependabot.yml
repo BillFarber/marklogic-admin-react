@@ -1,0 +1,79 @@
+version: 2
+updates:
+  # Frontend dependencies (React/Vite)
+  - package-ecosystem: "npm"
+    directory: "/MarkLogicAdminUI"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "@BillFarber"
+    assignees:
+      - "@BillFarber"
+    commit-message:
+      prefix: "deps(frontend)"
+      include: "scope"
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      testing:
+        patterns:
+          - "@testing-library/*"
+          - "vitest*"
+          - "jsdom"
+      vite-ecosystem:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+      linting:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "prettier"
+          - "@typescript-eslint/*"
+
+  # Backend dependencies (Java/Gradle)
+  - package-ecosystem: "gradle"
+    directory: "/MarkLogicAdminProxy"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "@BillFarber"
+    assignees:
+      - "@BillFarber"
+    commit-message:
+      prefix: "deps(backend)"
+      include: "scope"
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot:*"
+          - "org.springframework:*"
+      testing:
+        patterns:
+          - "*junit*"
+          - "*mockito*"
+          - "*testcontainers*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "@BillFarber"
+    assignees:
+      - "@BillFarber"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

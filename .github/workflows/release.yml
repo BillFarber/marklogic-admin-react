@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  NODE_VERSION: "18"
+  JAVA_VERSION: "17"
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: "./MarkLogicAdminUI/package-lock.json"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Install frontend dependencies
+        working-directory: ./MarkLogicAdminUI
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./MarkLogicAdminUI
+        run: npm run build
+
+      - name: Build backend
+        working-directory: ./MarkLogicAdminProxy
+        run: |
+          chmod +x gradlew
+          ./gradlew build -x test
+
+      - name: Create release package
+        run: |
+          mkdir -p release
+          cp -r MarkLogicAdminUI/dist release/frontend
+          cp -r MarkLogicAdminProxy/build/libs release/backend
+          cp docker-compose.yml release/
+          cp README.md release/
+          tar -czf marklogic-admin-${{ github.ref_name }}.tar.gz release/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            # Extract changelog for this version
+            sed -n "/^## \[${{ github.ref_name }}\]/,/^## \[/p" CHANGELOG.md | head -n -1 > current_changelog.md
+          else
+            echo "Release ${{ github.ref_name }}" > current_changelog.md
+            echo "" >> current_changelog.md
+            echo "### Changes" >> current_changelog.md
+            git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> current_changelog.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body_path: current_changelog.md
+          files: |
+            marklogic-admin-${{ github.ref_name }}.tar.gz
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        env:
+          REGISTRY: ghcr.io
+          IMAGE_NAME: ${{ github.repository }}
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
+
+          # Build frontend image
+          docker build -t $REGISTRY/$IMAGE_NAME-frontend:${{ github.ref_name }} -f MarkLogicAdminUI/Dockerfile MarkLogicAdminUI/
+          docker build -t $REGISTRY/$IMAGE_NAME-frontend:latest -f MarkLogicAdminUI/Dockerfile MarkLogicAdminUI/
+
+          # Build backend image  
+          docker build -t $REGISTRY/$IMAGE_NAME-backend:${{ github.ref_name }} -f MarkLogicAdminProxy/Dockerfile MarkLogicAdminProxy/
+          docker build -t $REGISTRY/$IMAGE_NAME-backend:latest -f MarkLogicAdminProxy/Dockerfile MarkLogicAdminProxy/
+
+          # Push images
+          docker push $REGISTRY/$IMAGE_NAME-frontend:${{ github.ref_name }}
+          docker push $REGISTRY/$IMAGE_NAME-frontend:latest
+          docker push $REGISTRY/$IMAGE_NAME-backend:${{ github.ref_name }}
+          docker push $REGISTRY/$IMAGE_NAME-backend:latest

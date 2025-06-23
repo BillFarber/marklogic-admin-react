@@ -1,0 +1,258 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: "18"
+
+jobs:
+  # Frontend CI for React/Vite application
+  frontend-ci:
+    name: Frontend CI (React/Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./MarkLogicAdminUI
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: "./MarkLogicAdminUI/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type checking
+        run: npm run type-check
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+
+      - name: Run tests
+        run: npm run test -- --run --coverage
+
+      - name: Upload test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./MarkLogicAdminUI/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: ./MarkLogicAdminUI/dist/
+          retention-days: 7
+
+  # Backend CI for Spring Boot application
+  backend-ci:
+    name: Backend CI (Spring Boot)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./MarkLogicAdminProxy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Generate test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Backend Tests
+          path: "./MarkLogicAdminProxy/build/test-results/test/*.xml"
+          reporter: java-junit
+
+      - name: Build application
+        run: ./gradlew build -x test
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-build
+          path: ./MarkLogicAdminProxy/build/libs/
+          retention-days: 7
+
+  # Security scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  # Integration tests (optional - runs against actual MarkLogic if available)
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    services:
+      marklogic:
+        image: marklogicdb/marklogic-db:latest-11
+        ports:
+          - 8000:8000
+          - 8001:8001
+          - 8002:8002
+        env:
+          MARKLOGIC_INIT: true
+          MARKLOGIC_ADMIN_USERNAME: admin
+          MARKLOGIC_ADMIN_PASSWORD: admin
+        options: >-
+          --health-cmd "curl -f http://localhost:8001/admin/v1/status || exit 1"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: ./MarkLogicAdminUI
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: "./MarkLogicAdminUI/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for MarkLogic to be ready
+        run: |
+          timeout 300 bash -c 'until curl -f http://localhost:8001/admin/v1/status; do sleep 5; done'
+
+      - name: Run integration tests
+        run: npm run test -- --run src/**/*.integration.test.tsx
+        env:
+          VITE_MARKLOGIC_HOST: http://localhost:8002
+          VITE_API_BASE_URL: http://localhost:8080
+
+  # Deployment (only on main branch)
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download frontend artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build
+          path: ./dist
+
+      - name: Download backend artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-build
+          path: ./build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment
+          cp -r dist deployment/frontend
+          cp -r build deployment/backend
+          tar -czf marklogic-admin-${{ github.sha }}.tar.gz deployment/
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-package
+          path: marklogic-admin-${{ github.sha }}.tar.gz
+          retention-days: 30
+
+      # Add your deployment steps here
+      # For example, deploy to AWS, Docker registry, etc.
+      - name: Deploy to staging
+        run: |
+          echo "Deployment would happen here"
+          echo "Package: marklogic-admin-${{ github.sha }}.tar.gz"
+          # Example: aws s3 cp marklogic-admin-${{ github.sha }}.tar.gz s3://your-bucket/
+          # Example: docker build -t your-registry/marklogic-admin:${{ github.sha }} .
+
+  # Notification on workflow completion
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci, security]
+    if: always()
+
+    steps:
+      - name: Notify on success
+        if: ${{ needs.frontend-ci.result == 'success' && needs.backend-ci.result == 'success' && needs.security.result == 'success' }}
+        run: |
+          echo "✅ All CI checks passed successfully!"
+
+      - name: Notify on failure
+        if: ${{ needs.frontend-ci.result == 'failure' || needs.backend-ci.result == 'failure' || needs.security.result == 'failure' }}
+        run: |
+          echo "❌ Some CI checks failed"
+          echo "Frontend CI: ${{ needs.frontend-ci.result }}"
+          echo "Backend CI: ${{ needs.backend-ci.result }}"
+          echo "Security: ${{ needs.security.result }}"

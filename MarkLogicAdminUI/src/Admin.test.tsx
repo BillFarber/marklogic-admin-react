@@ -74,7 +74,7 @@ const mockAllEndpoints = (databasesResponse: any, forestsResponse: any, serversR
         });
 };
 
-// Helper function to create mock responses including database, forest, server, group, user, and role details
+// Helper function to create mock responses including database, forest, server, group, user, role, and host details
 const mockAllEndpointsWithDetails = (
     databasesResponse: any,
     forestsResponse: any,
@@ -87,7 +87,9 @@ const mockAllEndpointsWithDetails = (
     serverDetailsResponses: Record<string, any> = {},
     groupDetailsResponses: Record<string, any> = {},
     userDetailsResponses: Record<string, any> = {},
-    roleDetailsResponses: Record<string, any> = {}
+    roleDetailsResponses: Record<string, any> = {},
+    hostsResponse: any = null,
+    hostDetailsResponses: Record<string, any> = {}
 ) => {
     const defaultGroupsResponse = groupsResponse || {
         'group-default-list': {
@@ -113,9 +115,17 @@ const mockAllEndpointsWithDetails = (
         }
     };
 
+    const defaultHostsResponse = hostsResponse || {
+        'host-default-list': {
+            'list-items': {
+                'list-item': []
+            }
+        }
+    };
+
     const fetchMock = fetch as any;
 
-    // Mock the initial 6 endpoints
+    // Mock the initial 7 endpoints
     fetchMock
         .mockResolvedValueOnce({
             ok: true,
@@ -140,6 +150,10 @@ const mockAllEndpointsWithDetails = (
         .mockResolvedValueOnce({
             ok: true,
             json: () => Promise.resolve(defaultRolesResponse)
+        })
+        .mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve(defaultHostsResponse)
         });
 
     // Mock database detail endpoints for each database with idref
@@ -245,11 +259,34 @@ const mockAllEndpointsWithDetails = (
             });
         });
     }
+
+    // Mock host detail endpoints for each host with nameref
+    if (defaultHostsResponse && defaultHostsResponse['host-default-list']?.['list-items']?.['list-item']) {
+        const hostList = defaultHostsResponse['host-default-list']['list-items']['list-item'];
+        hostList.filter((host: any) => host.nameref).forEach((host: any) => {
+            const detailResponse = hostDetailsResponses[host.nameref] || {
+                'host-name': host.nameref,
+                'group': 'Default',
+                'bind-port': 7999,
+                'foreign-bind-port': 7998,
+                'zone': 'local-cluster'
+            };
+            fetchMock.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(detailResponse)
+            });
+        });
+    }
 };
 
-// Helper function to create mock error responses for all six endpoints
+// Helper function to create mock error responses for all seven endpoints
 const mockAllEndpointsWithError = (status: number, statusText: string) => {
     (fetch as any)
+        .mockResolvedValueOnce({
+            ok: false,
+            status,
+            statusText
+        })
         .mockResolvedValueOnce({
             ok: false,
             status,
@@ -1176,8 +1213,8 @@ describe('Admin', () => {
 
             render(<Admin />);
 
-            // Should make calls to all six endpoints
-            expect(fetch).toHaveBeenCalledTimes(6);
+            // Should make calls to all seven endpoints
+            expect(fetch).toHaveBeenCalledTimes(7);
             expect(fetch).toHaveBeenCalledWith(
                 'http://localhost:8080/manage/v2/databases',
                 { method: 'GET', headers: { 'Accept': 'application/json' } }
@@ -1386,7 +1423,7 @@ describe('Admin', () => {
             expect(forestsSection?.textContent).toContain('Security-forest');
 
             // Verify all API calls were made
-            expect(fetch).toHaveBeenCalledTimes(8); // databases + forests + servers + groups + users + roles + 2 database details
+            expect(fetch).toHaveBeenCalledTimes(9); // databases + forests + servers + groups + users + roles + hosts + 2 database details
             expect(fetch).toHaveBeenCalledWith(
                 'http://localhost:8080/manage/v2/databases',
                 expect.any(Object)
@@ -2067,7 +2104,7 @@ describe('Admin', () => {
             });
 
             // Should only make one details call (for Documents)
-            expect(fetch).toHaveBeenCalledTimes(7); // Initial databases + forests + servers + groups + users + roles + one database details call
+            expect(fetch).toHaveBeenCalledTimes(8); // Initial databases + forests + servers + groups + users + roles + hosts + one database details call
             expect(fetch).toHaveBeenCalledWith(
                 'http://localhost:8080/manage/v2/databases/doc-123/properties?format=json',
                 expect.any(Object)

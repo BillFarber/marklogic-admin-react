@@ -5,7 +5,7 @@ export interface DetailsModalProps {
     onClose: () => void;
     title: string;
     data: any;
-    type: 'database' | 'forest' | 'server' | 'group' | 'user' | 'role';
+    type: 'database' | 'forest' | 'server' | 'group' | 'host' | 'user' | 'role';
 }
 
 export const DetailsModal = React.memo(function DetailsModal({
@@ -29,6 +29,7 @@ export const DetailsModal = React.memo(function DetailsModal({
             case 'forest': return '#8b6914'; // Amber/golden
             case 'server': return '#8b6914'; // Amber/golden
             case 'group': return '#5a6c7d'; // Blue-grey
+            case 'host': return '#5a6c7d'; // Blue-grey (same as group since they're infrastructure)
             case 'user': return '#4a7c59'; // Forest green
             case 'role': return '#8b4513'; // Saddle brown
             default: return '#666';
@@ -324,6 +325,51 @@ export const DetailsModal = React.memo(function DetailsModal({
                                 wordBreak: 'break-word'
                             }}>
                                 {JSON.stringify({ ...data, groupDetails }, null, 2)}
+                            </pre>
+                        </details>
+                    </div>
+                );
+            } case 'host': {
+                return (
+                    <div style={{ color: '#333' }}>
+                        {Object.keys(data).length > 0 ? (
+                            <>
+                                <div style={{ marginBottom: '16px' }}><strong>Host Details:</strong></div>
+
+                                {/* Display all host properties dynamically */}
+                                {Object.entries(data).map(([key, value]) => (
+                                    <div key={key} style={{ marginBottom: '8px' }}>
+                                        <strong>{key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong>{' '}
+                                        {typeof value === 'boolean' ? (value ? 'Yes' : 'No') :
+                                            typeof value === 'object' ? JSON.stringify(value) :
+                                                String(value)}
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            <div style={{ marginBottom: '16px', color: '#666' }}>
+                                No host details available for this host.
+                            </div>
+                        )}
+
+                        <hr style={{ margin: '16px 0', borderColor: '#ddd' }} />
+                        <details style={{ marginTop: '16px' }}>
+                            <summary style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '8px', color: '#333' }}>
+                                Complete JSON Data
+                            </summary>
+                            <pre style={{
+                                background: '#f8f9fa',
+                                color: '#212529',
+                                padding: '16px',
+                                borderRadius: '6px',
+                                overflow: 'auto',
+                                fontSize: '12px',
+                                maxHeight: '400px',
+                                border: '1px solid #e9ecef',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word'
+                            }}>
+                                {JSON.stringify(data, null, 2)}
                             </pre>
                         </details>
                     </div>

@@ -12,10 +12,12 @@ export { DatabasesSection } from './DatabasesSection';
 export { ForestsSection } from './ForestsSection';
 export { ServersSection } from './ServersSection';
 export { GroupsSection } from './GroupsSection';
+export { HostsSection } from './HostsSection';
 export { DatabaseItem } from './DatabaseItem';
 export { ForestItem } from './ForestItem';
 export { ServerItem } from './ServerItem';
 export { GroupItem } from './GroupItem';
+export { HostItem } from './HostItem';
 
 // Error Boundaries
 export { default as ErrorBoundary } from './ErrorBoundary';

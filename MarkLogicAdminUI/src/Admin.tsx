@@ -4,6 +4,7 @@ import { useDatabases } from './hooks/useDatabases';
 import { useForests } from './hooks/useForests';
 import { useServers } from './hooks/useServers';
 import { useGroups } from './hooks/useGroups';
+import { useHosts } from './hooks/useHosts';
 import { useUsers } from './hooks/useUsers';
 import { useRoles } from './hooks/useRoles';
 import { useLogs } from './hooks/useLogs';
@@ -15,6 +16,7 @@ function Admin() {
     const { forests, forestDetails, loading: forestsLoading, error: forestsError } = useForests();
     const { servers, serverDetails, loading: serversLoading, error: serversError } = useServers();
     const { groups, groupDetails, loading: groupsLoading, error: groupsError } = useGroups();
+    const { hosts, hostDetails, loading: hostsLoading, error: hostsError } = useHosts();
     const { users, userDetails, loading: usersLoading, error: usersError } = useUsers();
     const { roles, roleDetails, loading: rolesLoading, error: rolesError } = useRoles();
 
@@ -25,12 +27,14 @@ function Admin() {
         hoveredForest,
         hoveredServer,
         hoveredGroup,
+        hoveredHost,
         hoveredUser,
         hoveredRole,
         setHoveredDatabase,
         setHoveredForest,
         setHoveredServer,
         setHoveredGroup,
+        setHoveredHost,
         setHoveredUser,
         setHoveredRole
     } = useHover();
@@ -43,10 +47,10 @@ function Admin() {
     }, []);
 
     // Combine loading states from all hooks
-    const isLoading = databasesLoading || forestsLoading || serversLoading || groupsLoading || usersLoading || rolesLoading || logsLoading;
+    const isLoading = databasesLoading || forestsLoading || serversLoading || groupsLoading || hostsLoading || usersLoading || rolesLoading || logsLoading;
 
     // Combine error states from all hooks
-    const combinedError = [databasesError, forestsError, serversError, groupsError, usersError, rolesError, logsError].filter(Boolean).join('; ') || null;
+    const combinedError = [databasesError, forestsError, serversError, groupsError, hostsError, usersError, rolesError, logsError].filter(Boolean).join('; ') || null;
 
     return (
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
@@ -60,6 +64,7 @@ function Admin() {
                     <div>Loading forests...</div>
                     <div>Loading servers...</div>
                     <div>Loading groups...</div>
+                    <div>Loading hosts...</div>
                     <div>Loading users...</div>
                     <div>Loading roles...</div>
                     {logsLoading && <div>Loading logs...</div>}
@@ -157,6 +162,10 @@ function Admin() {
                                 groupDetails={groupDetails}
                                 hoveredGroup={hoveredGroup}
                                 setHoveredGroup={setHoveredGroup}
+                                hosts={hosts}
+                                hostDetails={hostDetails}
+                                hoveredHost={hoveredHost}
+                                setHoveredHost={setHoveredHost}
                                 onDatabaseClick={(_databaseName) => {
                                     setActiveTab('data');
                                     // Could add logic to highlight the specific database

@@ -169,6 +169,7 @@ export type DatabaseDetailsMap = Record<string, DatabaseProperties>;
 export type ForestDetailsMap = Record<string, ForestProperties>;
 export type ServerDetailsMap = Record<string, ServerProperties>;
 export type GroupDetailsMap = Record<string, GroupProperties>;
+export type HostDetailsMap = Record<string, HostProperties>;
 export type UserDetailsMap = Record<string, UserProperties>;
 export type RoleDetailsMap = Record<string, RoleProperties>;
 
@@ -182,6 +183,8 @@ export interface AdminState {
     serverDetails: ServerDetailsMap;
     groups: GroupListResponse | null;
     groupDetails: GroupDetailsMap;
+    hosts: HostListResponse | null;
+    hostDetails: HostDetailsMap;
     users: UserListResponse | null;
     userDetails: UserDetailsMap;
     roles: RoleListResponse | null;
@@ -195,6 +198,7 @@ export interface AdminState {
     hoveredForest: string | null;
     hoveredServer: string | null;
     hoveredGroup: string | null;
+    hoveredHost: string | null;
     hoveredUser: string | null;
     hoveredRole: string | null;
     activeTab: string;
@@ -338,6 +342,10 @@ export interface InfrastructureTabProps {
     groupDetails: GroupDetailsMap;
     hoveredGroup: string | null;
     setHoveredGroup: (group: string | null) => void;
+    hosts: HostListResponse | null;
+    hostDetails: HostDetailsMap;
+    hoveredHost: string | null;
+    setHoveredHost: (host: string | null) => void;
     onDatabaseClick?: (databaseName: string) => void;
 }
 
@@ -369,4 +377,23 @@ export interface LogsSectionProps {
 export interface RawJsonSectionProps {
     data: any;
     title: string;
+}
+
+// Host API Types
+export interface HostListResponse {
+    'host-default-list': MarkLogicDefaultList;
+}
+
+export interface HostProperties {
+    'host-name': string;
+    'host-id'?: string;
+    group?: string;
+    'bind-port'?: number;
+    'foreign-bind-port'?: number;
+    zone?: string;
+    'bootstrap-host'?: boolean;
+    'host-mode'?: string;
+    'host-mode-description'?: string;
+    'dynamic-host'?: boolean;
+    [key: string]: any; // Allow additional properties
 }

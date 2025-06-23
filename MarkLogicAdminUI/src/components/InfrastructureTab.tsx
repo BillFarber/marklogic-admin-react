@@ -3,6 +3,7 @@ import React from 'react';
 import type { InfrastructureTabProps } from '../types/marklogic';
 import { ServersSection } from './ServersSection';
 import { GroupsSection } from './GroupsSection';
+import { HostsSection } from './HostsSection';
 import { RawJsonSection } from './RawJsonSection';
 
 export function InfrastructureTab({
@@ -14,6 +15,10 @@ export function InfrastructureTab({
     groupDetails,
     hoveredGroup,
     setHoveredGroup,
+    hosts,
+    hostDetails,
+    hoveredHost,
+    setHoveredHost,
     onDatabaseClick
 }: InfrastructureTabProps) {
     return (
@@ -43,6 +48,15 @@ export function InfrastructureTab({
                         setHoveredGroup={setHoveredGroup}
                     />
                 </div>
+
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <HostsSection
+                        hosts={hosts}
+                        hostDetails={hostDetails}
+                        hoveredHost={hoveredHost}
+                        setHoveredHost={setHoveredHost}
+                    />
+                </div>
             </div>
 
             {/* Raw JSON data sections for Infrastructure */}
@@ -54,6 +68,11 @@ export function InfrastructureTab({
             <RawJsonSection
                 data={groups}
                 title="View Raw Groups JSON"
+            />
+
+            <RawJsonSection
+                data={hosts}
+                title="View Raw Hosts JSON"
             />
         </div>
     );

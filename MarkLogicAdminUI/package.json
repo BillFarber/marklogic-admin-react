@@ -8,8 +8,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,md}\"",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "clean": "rm -rf dist node_modules/.vite",
+    "type-check": "tsc --noEmit",
+    "pre-commit": "npm run lint:fix && npm run format && npm run type-check && npm run test"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",

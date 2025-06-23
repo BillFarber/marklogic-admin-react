@@ -554,8 +554,9 @@ describe('Admin', () => {
             expect(screen.getByText('View Raw Databases JSON')).toBeInTheDocument();
         });
 
-        // Should not show databases section for malformed data
-        expect(screen.queryByRole('heading', { name: 'Databases' })).not.toBeInTheDocument();
+        // Should show databases section with empty state for malformed data
+        expect(screen.getByRole('heading', { name: 'Databases' })).toBeInTheDocument();
+        expect(screen.getByText('No databases found')).toBeInTheDocument();
     });
 
     it('sets document title on mount', () => {

@@ -1,12 +1,14 @@
 import React from 'react';
 
 import type { DatabaseItemProps } from '../types/marklogic';
+import { DetailsModal } from './DetailsModal';
 
 export const DatabaseItem = React.memo(function DatabaseItem({ database, databaseDetails, hoveredDatabase, setHoveredDatabase }: DatabaseItemProps) {
     const databaseId = database.idref || database.nameref;
     const details = databaseDetails[databaseId];
     const isHovered = hoveredDatabase === databaseId;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
 
     const handleMouseEnter = () => {
         if (hoverTimeout) {
@@ -104,6 +106,38 @@ export const DatabaseItem = React.memo(function DatabaseItem({ database, databas
                     onMouseLeave={handleTooltipMouseLeave}
                     onClick={(e) => e.stopPropagation()}
                 >
+                    {/* Show Details Button */}
+                    <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #b8860b' }}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsModalOpen(true);
+                            }}
+                            style={{
+                                backgroundColor: '#fff',
+                                color: '#8b6914',
+                                border: '1px solid #b8860b',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                fontSize: '0.9em',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                width: '100%',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f0f0f0';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#fff';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            Show Details
+                        </button>
+                    </div>
+
                     <div><strong>Database ID:</strong> {database.idref}</div>
                     <div><strong>Name:</strong> {details['database-name'] || database.nameref}</div>
                     <div><strong>Enabled:</strong> {details.enabled ? 'Yes' : 'No'}</div>
@@ -120,6 +154,15 @@ export const DatabaseItem = React.memo(function DatabaseItem({ database, databas
                     )}
                 </div>
             )}
+
+            {/* Details Modal */}
+            <DetailsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={database.nameref}
+                data={{ ...database, ...details }}
+                type="database"
+            />
         </li>
     );
 });

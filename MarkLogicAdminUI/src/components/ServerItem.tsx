@@ -1,4 +1,5 @@
 import React from 'react';
+import { DetailsModal } from './DetailsModal';
 
 interface ServerItemProps {
     server: any;
@@ -11,6 +12,7 @@ interface ServerItemProps {
 export const ServerItem = React.memo(function ServerItem({ server, serverDetails, hoveredServer, setHoveredServer, onDatabaseClick }: ServerItemProps) {
     const isHovered = hoveredServer === server.idref;
     const [hoverTimeout, setHoverTimeout] = React.useState<number | null>(null);
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
 
     const handleMouseEnter = () => {
         if (hoverTimeout) {
@@ -101,6 +103,38 @@ export const ServerItem = React.memo(function ServerItem({ server, serverDetails
                     onMouseLeave={handleTooltipMouseLeave}
                     onClick={(e) => e.stopPropagation()}
                 >
+                    {/* Show Details Button */}
+                    <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #b8860b' }}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsModalOpen(true);
+                            }}
+                            style={{
+                                backgroundColor: '#fff',
+                                color: '#8b6914',
+                                border: '1px solid #b8860b',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                fontSize: '0.9em',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                width: '100%',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f0f0f0';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#fff';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            Show Details
+                        </button>
+                    </div>
+
                     <div><strong>Server ID:</strong> {server.idref}</div>
                     <div><strong>Name:</strong> {server.nameref}</div>
                     <div><strong>Type:</strong> {server.kindref || 'N/A'}</div>
@@ -208,6 +242,15 @@ export const ServerItem = React.memo(function ServerItem({ server, serverDetails
                     })()}
                 </div>
             )}
+
+            {/* Details Modal */}
+            <DetailsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={server.nameref}
+                data={{ ...server, serverDetails }}
+                type="server"
+            />
         </li>
     );
 });

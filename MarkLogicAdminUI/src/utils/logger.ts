@@ -4,66 +4,66 @@
  */
 
 export enum LogLevel {
-    DEBUG = 0,
-    INFO = 1,
-    WARN = 2,
-    ERROR = 3,
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
 }
 
 class Logger {
-    private level: LogLevel;
+  private level: LogLevel;
 
-    constructor() {
-        // Default to INFO level, can be overridden via environment variable
-        const envLevel = import.meta.env?.VITE_LOG_LEVEL || 'INFO';
-        this.level = LogLevel[envLevel as keyof typeof LogLevel] || LogLevel.INFO;
+  constructor() {
+    // Default to INFO level, can be overridden via environment variable
+    const envLevel = import.meta.env?.VITE_LOG_LEVEL || 'INFO';
+    this.level = LogLevel[envLevel as keyof typeof LogLevel] || LogLevel.INFO;
+  }
+
+  private shouldLog(level: LogLevel): boolean {
+    return level >= this.level;
+  }
+
+  private formatMessage(level: string, message: string, data?: any): string {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] ${level}:`;
+
+    if (data !== undefined) {
+      return `${prefix} ${message} ${JSON.stringify(data)}`;
     }
+    return `${prefix} ${message}`;
+  }
 
-    private shouldLog(level: LogLevel): boolean {
-        return level >= this.level;
+  debug(message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.DEBUG)) {
+      console.debug(this.formatMessage('DEBUG', message, data));
     }
+  }
 
-    private formatMessage(level: string, message: string, data?: any): string {
-        const timestamp = new Date().toISOString();
-        const prefix = `[${timestamp}] ${level}:`;
-
-        if (data !== undefined) {
-            return `${prefix} ${message} ${JSON.stringify(data)}`;
-        }
-        return `${prefix} ${message}`;
+  info(message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.INFO)) {
+      console.info(this.formatMessage('INFO', message, data));
     }
+  }
 
-    debug(message: string, data?: any): void {
-        if (this.shouldLog(LogLevel.DEBUG)) {
-            console.debug(this.formatMessage('DEBUG', message, data));
-        }
+  warn(message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.WARN)) {
+      console.warn(this.formatMessage('WARN', message, data));
     }
+  }
 
-    info(message: string, data?: any): void {
-        if (this.shouldLog(LogLevel.INFO)) {
-            console.info(this.formatMessage('INFO', message, data));
-        }
+  error(message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.ERROR)) {
+      console.error(this.formatMessage('ERROR', message, data));
     }
+  }
 
-    warn(message: string, data?: any): void {
-        if (this.shouldLog(LogLevel.WARN)) {
-            console.warn(this.formatMessage('WARN', message, data));
-        }
-    }
+  setLevel(level: LogLevel): void {
+    this.level = level;
+  }
 
-    error(message: string, data?: any): void {
-        if (this.shouldLog(LogLevel.ERROR)) {
-            console.error(this.formatMessage('ERROR', message, data));
-        }
-    }
-
-    setLevel(level: LogLevel): void {
-        this.level = level;
-    }
-
-    getLevel(): LogLevel {
-        return this.level;
-    }
+  getLevel(): LogLevel {
+    return this.level;
+  }
 }
 
 // Export a singleton instance

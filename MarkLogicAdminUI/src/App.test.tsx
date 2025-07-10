@@ -8,26 +8,30 @@ import '@testing-library/jest-dom';
 globalThis.fetch = vi.fn();
 
 describe('App', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-    it('renders Admin component on the home page', () => {
-        // Mock fetch to return a pending promise to avoid API call
-        (fetch as any).mockReturnValue(new Promise(() => { }));
+  it('renders Admin component on the home page', () => {
+    // Mock fetch to return a pending promise to avoid API call
+    (fetch as any).mockReturnValue(new Promise(() => {}));
 
-        render(
-            <MemoryRouter initialEntries={["/"]}>
-                <App />
-            </MemoryRouter>
-        );
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    );
 
-        // Check that the Admin component is rendered (look for its distinctive title)
-        expect(screen.getByRole('heading', { name: /MarkLogic Admin \(Proxy\)/i })).toBeInTheDocument();
-        expect(screen.getByText(/Welcome to the admin page using Spring Boot proxy/i)).toBeInTheDocument();
-    });
+    // Check that the Admin component is rendered (look for its distinctive title)
+    expect(
+      screen.getByRole('heading', { name: /MarkLogic Admin \(Proxy\)/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Welcome to the admin page using Spring Boot proxy/i),
+    ).toBeInTheDocument();
+  });
 });

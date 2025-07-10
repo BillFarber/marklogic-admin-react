@@ -1,28 +1,28 @@
 import { useState } from 'react';
 
 export function useHover() {
-    const [hoveredDatabase, setHoveredDatabase] = useState<string | null>(null);
-    const [hoveredForest, setHoveredForest] = useState<string | null>(null);
-    const [hoveredServer, setHoveredServer] = useState<string | null>(null);
-    const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
-    const [hoveredHost, setHoveredHost] = useState<string | null>(null);
-    const [hoveredUser, setHoveredUser] = useState<string | null>(null);
-    const [hoveredRole, setHoveredRole] = useState<string | null>(null);
+  const [hoveredDatabase, setHoveredDatabase] = useState<string | null>(null);
+  const [hoveredForest, setHoveredForest] = useState<string | null>(null);
+  const [hoveredServer, setHoveredServer] = useState<string | null>(null);
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+  const [hoveredHost, setHoveredHost] = useState<string | null>(null);
+  const [hoveredUser, setHoveredUser] = useState<string | null>(null);
+  const [hoveredRole, setHoveredRole] = useState<string | null>(null);
 
-    return {
-        hoveredDatabase,
-        hoveredForest,
-        hoveredServer,
-        hoveredGroup,
-        hoveredHost,
-        hoveredUser,
-        hoveredRole,
-        setHoveredDatabase,
-        setHoveredForest,
-        setHoveredServer,
-        setHoveredGroup,
-        setHoveredHost,
-        setHoveredUser,
-        setHoveredRole
-    };
+  return {
+    hoveredDatabase,
+    hoveredForest,
+    hoveredServer,
+    hoveredGroup,
+    hoveredHost,
+    hoveredUser,
+    hoveredRole,
+    setHoveredDatabase,
+    setHoveredForest,
+    setHoveredServer,
+    setHoveredGroup,
+    setHoveredHost,
+    setHoveredUser,
+    setHoveredRole,
+  };
 }

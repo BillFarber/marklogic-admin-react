@@ -1,11 +1,11 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import typescriptEslint from '@typescript-eslint/eslint-plugin'
-import typescriptParser from '@typescript-eslint/parser'
-import react from 'eslint-plugin-react'
-import importPlugin from 'eslint-plugin-import'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import react from 'eslint-plugin-react';
+import importPlugin from 'eslint-plugin-import';
 
 export default [
   { ignores: ['dist', 'node_modules', 'build'] },
@@ -48,7 +48,10 @@ export default [
       'import/order': 'warn',
       'import/no-unresolved': 'off', // Turn off for now, would need path mapping
       'import/no-extraneous-dependencies': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
       'no-unused-vars': 'off', // Turn off base rule in favor of TypeScript version
     },
     settings: {
@@ -81,4 +84,4 @@ export default [
       'react/prop-types': 'off',
     },
   },
-]
+];

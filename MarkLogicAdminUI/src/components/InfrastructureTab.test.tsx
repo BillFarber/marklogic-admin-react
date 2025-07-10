@@ -26,6 +26,16 @@ describe('InfrastructureTab', () => {
         }
     };
 
+    const mockHosts = {
+        'host-default-list': {
+            'list-items': {
+                'list-item': [
+                    { nameref: 'localhost', idref: 'host-1' }
+                ]
+            }
+        }
+    };
+
     const defaultProps = {
         servers: mockServers,
         serverDetails: {},
@@ -34,7 +44,12 @@ describe('InfrastructureTab', () => {
         groups: mockGroups,
         groupDetails: {},
         hoveredGroup: null,
-        setHoveredGroup: vi.fn()
+        setHoveredGroup: vi.fn(),
+        hosts: mockHosts,
+        hostDetails: {},
+        hoveredHost: null,
+        setHoveredHost: vi.fn(),
+        onDatabaseClick: vi.fn()
     };
 
     beforeEach(() => {
